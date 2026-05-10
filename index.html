@@ -487,19 +487,6 @@
       background: #eff6ff;
     }
 
-    .shift-day.today::after {
-      content: "今日";
-      position: absolute;
-      right: 4px;
-      top: 4px;
-      background: #2563eb;
-      color: #fff;
-      border-radius: 999px;
-      font-size: 9px;
-      font-weight: 900;
-      padding: 2px 5px;
-    }
-
     .shift-day.sunday-bg {
       background: #fff7f7;
     }
@@ -516,10 +503,20 @@
       background: #e0ecff;
     }
 
+    .shift-day-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 4px;
+      min-height: 24px;
+      margin-bottom: 4px;
+    }
+
     .shift-date {
       font-weight: 900;
       font-size: 12px;
-      margin-bottom: 4px;
+      margin-bottom: 0;
+      line-height: 1.2;
     }
 
     .shift-date.sunday {
@@ -528,6 +525,44 @@
 
     .shift-date.saturday {
       color: #2563eb;
+    }
+
+    .today-mini {
+      display: inline-flex;
+      margin-left: 4px;
+      padding: 2px 5px;
+      border-radius: 999px;
+      background: #2563eb;
+      color: #fff;
+      font-size: 9px;
+      font-weight: 900;
+      vertical-align: middle;
+    }
+
+    .shift-manager-slot {
+      min-width: 72px;
+      min-height: 20px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: flex-start;
+    }
+
+    .shift-manager-mark {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      background: #111827;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 900;
+      padding: 4px 7px;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .shift-workers-area {
+      margin-top: 0;
     }
 
     .shift-worker {
@@ -563,20 +598,6 @@
     .shift-count.rest {
       background: #f3f4f6;
       color: #374151;
-    }
-
-    .shift-manager-mark {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 999px;
-      background: #111827;
-      color: #fff;
-      font-size: 10px;
-      font-weight: 900;
-      padding: 3px 6px;
-      margin-top: 2px;
-      line-height: 1;
     }
 
     .shift-detail-card {
@@ -724,18 +745,37 @@
       }
 
       .shift-day {
-        min-height: 68px;
+        min-height: 72px;
         padding: 4px;
         border-radius: 8px;
       }
 
-      .shift-worker {
-        display: none;
+      .shift-day-head {
+        min-height: 20px;
+        margin-bottom: 3px;
       }
 
       .shift-date {
         font-size: 11px;
-        margin-bottom: 3px;
+        margin-bottom: 0;
+      }
+
+      .today-mini {
+        display: none;
+      }
+
+      .shift-manager-slot {
+        min-width: 24px;
+        min-height: 18px;
+      }
+
+      .shift-manager-mark {
+        font-size: 9px;
+        padding: 2px 5px;
+      }
+
+      .shift-worker {
+        display: none;
       }
 
       .shift-month-nav {
@@ -750,11 +790,6 @@
 
       .shift-detail-member {
         font-size: 14px;
-      }
-
-      .shift-manager-mark {
-        font-size: 9px;
-        padding: 2px 5px;
       }
     }
   </style>
@@ -1849,19 +1884,26 @@
         const operationalRests = getOperationalRests(day);
         const managerWorkers = getManagerWorkers(day);
 
-        let html = `<div class="shift-date ${dateClass}">${day.day}</div>`;
+        const managerMarkText = isMobileView() ? '藤' : '藤本在席';
+        const todayLabel = day.date === getTodayText() ? '<span class="today-mini">今日</span>' : '';
+
+        let html = `
+          <div class="shift-day-head">
+            <div class="shift-date ${dateClass}">${day.day}${todayLabel}</div>
+            <div class="shift-manager-slot">
+              ${managerWorkers.length > 0
+                ? `<span class="shift-manager-mark" title="藤本在席">${managerMarkText}</span>`
+                : ''
+              }
+            </div>
+          </div>
+          <div class="shift-workers-area">
+        `;
 
         if (isMobileView()) {
           html += `<span class="shift-count">実働${operationalWorkers.length}</span>`;
           html += `<span class="shift-count rest">休み${operationalRests.length}</span>`;
-          if (managerWorkers.length > 0) {
-            html += `<span class="shift-manager-mark" title="藤本在席">藤</span>`;
-          }
         } else {
-          if (managerWorkers.length > 0) {
-            html += `<span class="shift-manager-mark" title="藤本在席">藤本在席</span>`;
-          }
-
           if (operationalWorkers.length === 0) {
             html += `<span class="shift-worker">実働なし</span>`;
           } else {
@@ -1876,6 +1918,8 @@
             });
           }
         }
+
+        html += `</div>`;
 
         div.innerHTML = html;
         calendar.appendChild(div);
