@@ -396,6 +396,116 @@
       margin-bottom: 4px;
     }
 
+    .shift-header-box {
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow);
+    }
+
+    .shift-title {
+      font-size: 20px;
+      font-weight: 900;
+      margin: 0 0 6px;
+    }
+
+    .shift-range {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .shift-month-nav {
+      display: flex;
+      gap: 8px;
+      margin: 12px 0;
+    }
+
+    .shift-month-nav .btn {
+      margin-top: 0;
+    }
+
+    .shift-calendar {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 4px;
+    }
+
+    .shift-weekday {
+      text-align: center;
+      font-size: 12px;
+      font-weight: 800;
+      color: #374151;
+      padding: 8px 0;
+    }
+
+    .shift-day {
+      min-height: 86px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 6px;
+      font-size: 12px;
+      overflow: hidden;
+    }
+
+    .shift-day.empty {
+      background: transparent;
+      border: none;
+    }
+
+    .shift-date {
+      font-weight: 900;
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+
+    .shift-date.sunday {
+      color: #dc2626;
+    }
+
+    .shift-date.saturday {
+      color: #2563eb;
+    }
+
+    .shift-worker {
+      display: block;
+      background: #f3f4f6;
+      border-radius: 7px;
+      padding: 3px 5px;
+      margin-bottom: 3px;
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .shift-worker.special {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .shift-special-list {
+      margin-top: 14px;
+    }
+
+    .shift-special-item {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+
+    .shift-special-item strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
     @media (max-width: 520px) {
       .app {
         padding: 12px;
@@ -424,6 +534,31 @@
 
       .btn.small {
         width: 100%;
+      }
+
+      .shift-calendar {
+        gap: 3px;
+      }
+
+      .shift-day {
+        min-height: 78px;
+        padding: 4px;
+        border-radius: 8px;
+      }
+
+      .shift-worker {
+        font-size: 10px;
+        padding: 2px 4px;
+      }
+
+      .shift-month-nav {
+        flex-direction: row;
+      }
+
+      .shift-month-nav .btn {
+        width: 33.3%;
+        font-size: 12px;
+        padding: 10px 6px;
       }
     }
   </style>
@@ -476,6 +611,11 @@
           <button class="menu-button" onclick="openCreateForm()">
             <strong>仮置き場登録</strong>
             <span>新しい仮置き場を登録します。</span>
+          </button>
+
+          <button class="menu-button" onclick="openShiftPage()">
+            <strong>シフト確認</strong>
+            <span>TKMサポートメンバーのシフトをカレンダー形式で確認します。</span>
           </button>
 
           <button class="menu-button" onclick="openLogPage()">
@@ -684,6 +824,38 @@
       </div>
     </section>
 
+    <!-- シフト確認画面 -->
+    <section id="pageShift" class="page">
+      <div class="top-actions">
+        <button class="btn small secondary" onclick="showPage('pageHome')">← ホーム</button>
+        <button class="btn small blue" onclick="loadShiftCalendar()">更新</button>
+      </div>
+
+      <div class="shift-header-box">
+        <h2 class="shift-title">シフト表</h2>
+        <div class="shift-range" id="shiftAvailableRange">
+          表示可能期間：読み込み中
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title" id="shiftMonthTitle">シフト表</h2>
+
+        <div class="shift-month-nav">
+          <button class="btn secondary" onclick="moveShiftMonth(-1)">前へ</button>
+          <button class="btn blue" onclick="moveShiftMonth(0)">今月</button>
+          <button class="btn secondary" onclick="moveShiftMonth(1)">次へ</button>
+        </div>
+
+        <div class="shift-calendar" id="shiftCalendar"></div>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">注意シフト一覧</h2>
+        <div id="shiftSpecialList" class="shift-special-list"></div>
+      </div>
+    </section>
+
     <!-- 操作履歴画面 -->
     <section id="pageLog" class="page">
       <div class="top-actions">
@@ -714,7 +886,10 @@
       currentList: [],
       currentItem: null,
       formMode: 'create',
-      lastPageBeforeForm: 'pageHome'
+      lastPageBeforeForm: 'pageHome',
+      shiftYear: new Date().getFullYear(),
+      shiftMonth: new Date().getMonth() + 1,
+      shiftData: null
     };
 
     window.addEventListener('load', async () => {
@@ -1370,6 +1545,143 @@
 
         list.appendChild(card);
       });
+    }
+
+    async function openShiftPage() {
+      showPage('pageShift');
+      await loadShiftCalendar();
+    }
+
+    async function loadShiftCalendar() {
+      try {
+        const result = await apiRequest('getShiftCalendar', {
+          year: state.shiftYear,
+          month: state.shiftMonth
+        });
+
+        state.shiftData = result;
+
+        renderShiftCalendar(result);
+
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    function renderShiftCalendar(data) {
+      const monthTitle = document.getElementById('shiftMonthTitle');
+      const availableRange = document.getElementById('shiftAvailableRange');
+      const calendar = document.getElementById('shiftCalendar');
+      const specialList = document.getElementById('shiftSpecialList');
+
+      monthTitle.textContent = data.monthLabel || `${state.shiftYear}年${state.shiftMonth}月`;
+
+      if (data.hasData) {
+        availableRange.textContent = `表示可能期間：${formatDateForDisplay(data.availableStartDate)} から ${formatDateForDisplay(data.availableEndDate)} まで`;
+      } else {
+        availableRange.textContent = '表示可能期間：シフトデータがまだありません';
+      }
+
+      calendar.innerHTML = '';
+
+      const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
+
+      weekdays.forEach(day => {
+        const div = document.createElement('div');
+        div.className = 'shift-weekday';
+        div.textContent = day;
+        calendar.appendChild(div);
+      });
+
+      const days = data.days || [];
+
+      if (days.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'shift-day';
+        empty.style.gridColumn = '1 / -1';
+        empty.textContent = 'この月のシフトデータはありません。';
+        calendar.appendChild(empty);
+        specialList.innerHTML = '<div class="shift-special-item">注意シフトはありません。</div>';
+        return;
+      }
+
+      const firstWeekday = days[0].weekday || 0;
+
+      for (let i = 0; i < firstWeekday; i++) {
+        const blank = document.createElement('div');
+        blank.className = 'shift-day empty';
+        calendar.appendChild(blank);
+      }
+
+      days.forEach(day => {
+        const div = document.createElement('div');
+        div.className = 'shift-day';
+
+        const dateClass = day.weekday === 0 ? 'sunday' : day.weekday === 6 ? 'saturday' : '';
+
+        let html = `<div class="shift-date ${dateClass}">${day.day}</div>`;
+
+        const workers = day.workingMembers || [];
+
+        if (workers.length === 0) {
+          html += `<span class="shift-worker">出勤なし</span>`;
+        } else {
+          workers.forEach(worker => {
+            const specialClass = worker.isSpecial === 'TRUE' ? 'special' : '';
+            const name = worker.displayName || worker.memberName || '';
+            const label = worker.isSpecial === 'TRUE'
+              ? `${name} ${worker.shiftType || worker.shiftValue || ''}`
+              : name;
+
+            html += `<span class="shift-worker ${specialClass}">${escapeHtml(label)}</span>`;
+          });
+        }
+
+        div.innerHTML = html;
+        calendar.appendChild(div);
+      });
+
+      renderShiftSpecialList(data.specialList || []);
+    }
+
+    function renderShiftSpecialList(list) {
+      const specialList = document.getElementById('shiftSpecialList');
+
+      specialList.innerHTML = '';
+
+      if (!list || list.length === 0) {
+        specialList.innerHTML = '<div class="shift-special-item">注意シフトはありません。</div>';
+        return;
+      }
+
+      list.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'shift-special-item';
+
+        const name = item.displayName || item.memberName || '';
+        const shiftLabel = item.shiftType || item.shiftValue || '';
+
+        div.innerHTML = `
+          <strong>${escapeHtml(formatDateForDisplay(item.date))}　${escapeHtml(name)}　${escapeHtml(shiftLabel)}</strong>
+          <div>元データ：${escapeHtml(item.shiftValue || '')}</div>
+        `;
+
+        specialList.appendChild(div);
+      });
+    }
+
+    function moveShiftMonth(offset) {
+      if (offset === 0) {
+        const now = new Date();
+        state.shiftYear = now.getFullYear();
+        state.shiftMonth = now.getMonth() + 1;
+      } else {
+        const date = new Date(state.shiftYear, state.shiftMonth - 1 + offset, 1);
+        state.shiftYear = date.getFullYear();
+        state.shiftMonth = date.getMonth() + 1;
+      }
+
+      loadShiftCalendar();
     }
 
     function getActivePageId() {
