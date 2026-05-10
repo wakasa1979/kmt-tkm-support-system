@@ -373,10 +373,6 @@
       margin-top: 24px;
     }
 
-    .hidden {
-      display: none !important;
-    }
-
     .loading {
       opacity: 0.65;
       pointer-events: none;
@@ -417,6 +413,28 @@
       line-height: 1.5;
     }
 
+    .shift-mode-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 12px 0;
+    }
+
+    .shift-mode-btn {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fff;
+      color: #374151;
+      padding: 11px;
+      font-weight: 900;
+    }
+
+    .shift-mode-btn.active {
+      background: var(--main);
+      color: #fff;
+      border-color: var(--main);
+    }
+
     .shift-month-nav {
       display: flex;
       gap: 8px;
@@ -450,6 +468,7 @@
       font-size: 12px;
       overflow: hidden;
       text-align: left;
+      position: relative;
     }
 
     .shift-day.empty {
@@ -461,6 +480,40 @@
     .shift-day.selected {
       border-color: var(--accent);
       box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.16);
+    }
+
+    .shift-day.today {
+      border-color: #2563eb;
+      background: #eff6ff;
+    }
+
+    .shift-day.today::after {
+      content: "今日";
+      position: absolute;
+      right: 4px;
+      top: 4px;
+      background: #2563eb;
+      color: #fff;
+      border-radius: 999px;
+      font-size: 9px;
+      font-weight: 900;
+      padding: 2px 5px;
+    }
+
+    .shift-day.sunday-bg {
+      background: #fff7f7;
+    }
+
+    .shift-day.saturday-bg {
+      background: #f8fbff;
+    }
+
+    .shift-day.all-rest {
+      background: #f3f4f6;
+    }
+
+    .shift-day.today.all-rest {
+      background: #e0ecff;
     }
 
     .shift-date {
@@ -512,6 +565,20 @@
       color: #374151;
     }
 
+    .shift-manager-mark {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      background: #111827;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 900;
+      padding: 3px 6px;
+      margin-top: 2px;
+      line-height: 1;
+    }
+
     .shift-detail-card {
       border: 1px solid var(--line);
       border-radius: 16px;
@@ -559,6 +626,69 @@
       text-align: right;
     }
 
+    .shift-week-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .shift-week-card {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fff;
+      padding: 14px;
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+    }
+
+    .shift-week-card.today {
+      border-color: #2563eb;
+      background: #eff6ff;
+    }
+
+    .shift-week-card.sunday-bg {
+      background: #fff7f7;
+    }
+
+    .shift-week-card.saturday-bg {
+      background: #f8fbff;
+    }
+
+    .shift-week-card.all-rest {
+      background: #f3f4f6;
+    }
+
+    .shift-week-date {
+      font-size: 16px;
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+
+    .shift-week-summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .shift-summary-pill {
+      border-radius: 999px;
+      background: #eef2ff;
+      color: #3730a3;
+      font-size: 12px;
+      font-weight: 900;
+      padding: 5px 9px;
+    }
+
+    .shift-summary-pill.rest {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .shift-summary-pill.manager {
+      background: #111827;
+      color: #fff;
+    }
+
     @media (max-width: 520px) {
       .app {
         padding: 12px;
@@ -594,7 +724,7 @@
       }
 
       .shift-day {
-        min-height: 64px;
+        min-height: 68px;
         padding: 4px;
         border-radius: 8px;
       }
@@ -620,6 +750,11 @@
 
       .shift-detail-member {
         font-size: 14px;
+      }
+
+      .shift-manager-mark {
+        font-size: 9px;
+        padding: 2px 5px;
       }
     }
   </style>
@@ -891,15 +1026,20 @@
         <div class="shift-range" id="shiftAvailableRange">
           表示可能期間：読み込み中
         </div>
+
+        <div class="shift-mode-tabs">
+          <button id="shiftModeMonth" class="shift-mode-btn active" onclick="setShiftViewMode('month')">月表示</button>
+          <button id="shiftModeWeek" class="shift-mode-btn" onclick="setShiftViewMode('week')">週表示</button>
+        </div>
       </div>
 
       <div class="card">
         <h2 class="card-title" id="shiftMonthTitle">シフト表</h2>
 
         <div class="shift-month-nav">
-          <button class="btn secondary" onclick="moveShiftMonth(-1)">前へ</button>
-          <button class="btn blue" onclick="moveShiftMonth(0)">今月</button>
-          <button class="btn secondary" onclick="moveShiftMonth(1)">次へ</button>
+          <button id="shiftPrevButton" class="btn secondary" onclick="moveShiftPeriod(-1)">前へ</button>
+          <button id="shiftTodayButton" class="btn blue" onclick="resetShiftPeriod()">今月</button>
+          <button id="shiftNextButton" class="btn secondary" onclick="moveShiftPeriod(1)">次へ</button>
         </div>
 
         <div class="shift-calendar" id="shiftCalendar"></div>
@@ -929,6 +1069,8 @@
   <script>
     const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyZCJYCEsEp5bZbCn8ZO1pCH_F844c1OKOYFDgErQWYp3q_ge0XTaTw8UgjRAhWbFjSfQ/exec';
 
+    const MANAGER_MEMBER_IDS = ['TKM001'];
+
     const state = {
       token: localStorage.getItem('kmt_token') || '',
       user: JSON.parse(localStorage.getItem('kmt_user') || 'null'),
@@ -941,7 +1083,8 @@
       shiftYear: new Date().getFullYear(),
       shiftMonth: new Date().getMonth() + 1,
       shiftData: null,
-      selectedShiftDate: ''
+      selectedShiftDate: '',
+      shiftViewMode: 'month'
     };
 
     window.addEventListener('load', async () => {
@@ -1605,12 +1748,40 @@
       }
     }
 
+    function setShiftViewMode(mode) {
+      state.shiftViewMode = mode;
+
+      document.getElementById('shiftModeMonth').classList.toggle('active', mode === 'month');
+      document.getElementById('shiftModeWeek').classList.toggle('active', mode === 'week');
+
+      updateShiftNavLabels();
+
+      if (!state.selectedShiftDate) {
+        state.selectedShiftDate = getTodayText();
+      }
+
+      if (state.shiftData) {
+        renderShiftCalendar(state.shiftData);
+      }
+    }
+
+    function updateShiftNavLabels() {
+      const todayButton = document.getElementById('shiftTodayButton');
+
+      if (!todayButton) return;
+
+      todayButton.textContent = state.shiftViewMode === 'week' ? '今週' : '今月';
+    }
+
     function renderShiftCalendar(data) {
+      updateShiftNavLabels();
+
       const monthTitle = document.getElementById('shiftMonthTitle');
       const availableRange = document.getElementById('shiftAvailableRange');
-      const calendar = document.getElementById('shiftCalendar');
 
-      monthTitle.textContent = data.monthLabel || `${state.shiftYear}年${state.shiftMonth}月`;
+      monthTitle.textContent = state.shiftViewMode === 'week'
+        ? `${data.monthLabel || `${state.shiftYear}年${state.shiftMonth}月`} / 週表示`
+        : data.monthLabel || `${state.shiftYear}年${state.shiftMonth}月`;
 
       if (data.hasData) {
         availableRange.textContent = `表示可能期間：${formatDateForDisplay(data.availableStartDate)} から ${formatDateForDisplay(data.availableEndDate)} まで`;
@@ -1618,6 +1789,16 @@
         availableRange.textContent = '表示可能期間：シフトデータがまだありません';
       }
 
+      if (state.shiftViewMode === 'week') {
+        renderShiftWeek(data);
+      } else {
+        renderShiftMonth(data);
+      }
+    }
+
+    function renderShiftMonth(data) {
+      const calendar = document.getElementById('shiftCalendar');
+      calendar.className = 'shift-calendar';
       calendar.innerHTML = '';
 
       const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
@@ -1651,7 +1832,7 @@
 
       days.forEach(day => {
         const div = document.createElement('button');
-        div.className = 'shift-day';
+        div.className = getShiftDayClass(day);
 
         if (day.date === state.selectedShiftDate) {
           div.classList.add('selected');
@@ -1663,19 +1844,28 @@
         };
 
         const dateClass = day.weekday === 0 ? 'sunday' : day.weekday === 6 ? 'saturday' : '';
-        const workers = day.workingMembers || [];
-        const rests = day.restMembers || [];
+
+        const operationalWorkers = getOperationalWorkers(day);
+        const operationalRests = getOperationalRests(day);
+        const managerWorkers = getManagerWorkers(day);
 
         let html = `<div class="shift-date ${dateClass}">${day.day}</div>`;
 
         if (isMobileView()) {
-          html += `<span class="shift-count">出勤${workers.length}</span>`;
-          html += `<span class="shift-count rest">休み${rests.length}</span>`;
+          html += `<span class="shift-count">実働${operationalWorkers.length}</span>`;
+          html += `<span class="shift-count rest">休み${operationalRests.length}</span>`;
+          if (managerWorkers.length > 0) {
+            html += `<span class="shift-manager-mark" title="藤本在席">藤</span>`;
+          }
         } else {
-          if (workers.length === 0) {
-            html += `<span class="shift-worker">出勤なし</span>`;
+          if (managerWorkers.length > 0) {
+            html += `<span class="shift-manager-mark" title="藤本在席">藤本在席</span>`;
+          }
+
+          if (operationalWorkers.length === 0) {
+            html += `<span class="shift-worker">実働なし</span>`;
           } else {
-            workers.forEach(worker => {
+            operationalWorkers.forEach(worker => {
               const specialClass = worker.isSpecial === 'TRUE' ? 'special' : '';
               const name = worker.displayName || worker.memberName || '';
               const label = worker.isSpecial === 'TRUE'
@@ -1696,36 +1886,125 @@
       renderShiftDayDetail(selectedDay);
     }
 
+    function renderShiftWeek(data) {
+      const calendar = document.getElementById('shiftCalendar');
+      calendar.className = 'shift-week-list';
+      calendar.innerHTML = '';
+
+      const days = data.days || [];
+
+      if (days.length === 0) {
+        calendar.innerHTML = '<div class="shift-week-card">この月のシフトデータはありません。</div>';
+        renderShiftDayDetail(null);
+        return;
+      }
+
+      if (!state.selectedShiftDate) {
+        state.selectedShiftDate = getDefaultShiftDate(data);
+      }
+
+      const weekDates = getWeekDateTexts(state.selectedShiftDate);
+
+      weekDates.forEach(dateText => {
+        const day = days.find(d => d.date === dateText);
+
+        const card = document.createElement('button');
+        card.className = 'shift-week-card';
+        card.style.textAlign = 'left';
+
+        if (dateText === getTodayText()) {
+          card.classList.add('today');
+        }
+
+        if (day) {
+          if (day.weekday === 0) card.classList.add('sunday-bg');
+          if (day.weekday === 6) card.classList.add('saturday-bg');
+          if (isOperationalAllRest(day)) card.classList.add('all-rest');
+
+          card.onclick = () => {
+            state.selectedShiftDate = day.date;
+            renderShiftCalendar(state.shiftData);
+          };
+
+          const operationalWorkers = getOperationalWorkers(day);
+          const operationalRests = getOperationalRests(day);
+          const managerWorkers = getManagerWorkers(day);
+          const managerRests = getManagerRests(day);
+
+          let html = `
+            <div class="shift-week-date">${escapeHtml(formatDateWithWeekday(day.date))}</div>
+            <div class="shift-week-summary">
+              <span class="shift-summary-pill">実働${operationalWorkers.length}</span>
+              <span class="shift-summary-pill rest">休み${operationalRests.length}</span>
+              <span class="shift-summary-pill manager">${managerWorkers.length > 0 ? '藤本在席' : '藤本不在'}</span>
+            </div>
+          `;
+
+          html += `
+            <div class="shift-detail-section">
+              <div class="shift-detail-section-title">実働出勤者</div>
+              ${renderShiftMemberRows(operationalWorkers, '実働出勤者はいません。')}
+            </div>
+            <div class="shift-detail-section">
+              <div class="shift-detail-section-title">休み</div>
+              ${renderShiftMemberRows(operationalRests, '休みのメンバーはいません。')}
+            </div>
+            <div class="shift-detail-section">
+              <div class="shift-detail-section-title">管理メンバー</div>
+              ${renderShiftMemberRows(managerWorkers.concat(managerRests), '管理メンバー情報はありません。')}
+            </div>
+          `;
+
+          card.innerHTML = html;
+
+        } else {
+          card.innerHTML = `
+            <div class="shift-week-date">${escapeHtml(formatDateWithWeekday(dateText))}</div>
+            <div class="shift-week-summary">
+              <span class="shift-summary-pill rest">データなし</span>
+            </div>
+          `;
+        }
+
+        calendar.appendChild(card);
+      });
+
+      const selectedDay = days.find(day => day.date === state.selectedShiftDate);
+      renderShiftDayDetail(selectedDay || null);
+    }
+
     function renderShiftDayDetail(day) {
       const area = document.getElementById('shiftDayDetail');
 
       if (!area) return;
 
-      if (!day) {
-        area.innerHTML = `
-          <div class="shift-detail-card">
-            <p class="shift-detail-title">シフト詳細</p>
-            <div class="shift-detail-section">表示できるシフトデータがありません。</div>
-          </div>
-        `;
+      if (!day || state.shiftViewMode === 'week') {
+        area.innerHTML = '';
         return;
       }
 
-      const workers = day.workingMembers || [];
-      const rests = day.restMembers || [];
+      const operationalWorkers = getOperationalWorkers(day);
+      const operationalRests = getOperationalRests(day);
+      const managerWorkers = getManagerWorkers(day);
+      const managerRests = getManagerRests(day);
 
       area.innerHTML = `
         <div class="shift-detail-card">
-          <p class="shift-detail-title">${escapeHtml(formatDateForDisplay(day.date))} のシフト詳細</p>
+          <p class="shift-detail-title">${escapeHtml(formatDateWithWeekday(day.date))} のシフト詳細</p>
 
           <div class="shift-detail-section">
-            <div class="shift-detail-section-title">出勤者</div>
-            ${renderShiftMemberRows(workers, '出勤者はいません。')}
+            <div class="shift-detail-section-title">管理メンバー</div>
+            ${renderShiftMemberRows(managerWorkers.concat(managerRests), '管理メンバー情報はありません。')}
+          </div>
+
+          <div class="shift-detail-section">
+            <div class="shift-detail-section-title">実働出勤者</div>
+            ${renderShiftMemberRows(operationalWorkers, '実働出勤者はいません。')}
           </div>
 
           <div class="shift-detail-section">
             <div class="shift-detail-section-title">休み</div>
-            ${renderShiftMemberRows(rests, '休みのメンバーはいません。')}
+            ${renderShiftMemberRows(operationalRests, '休みのメンバーはいません。')}
           </div>
         </div>
       `;
@@ -1749,6 +2028,55 @@
       }).join('');
     }
 
+    function getOperationalWorkers(day) {
+      return (day.workingMembers || []).filter(member => !isManagerMember(member));
+    }
+
+    function getOperationalRests(day) {
+      return (day.restMembers || []).filter(member => !isManagerMember(member));
+    }
+
+    function getManagerWorkers(day) {
+      return (day.workingMembers || []).filter(member => isManagerMember(member));
+    }
+
+    function getManagerRests(day) {
+      return (day.restMembers || []).filter(member => isManagerMember(member));
+    }
+
+    function isManagerMember(member) {
+      return MANAGER_MEMBER_IDS.includes(String(member.memberId || '').trim());
+    }
+
+    function isOperationalAllRest(day) {
+      const operationalWorkers = getOperationalWorkers(day);
+      const operationalRests = getOperationalRests(day);
+
+      return operationalWorkers.length === 0 && operationalRests.length > 0;
+    }
+
+    function getShiftDayClass(day) {
+      const classes = ['shift-day'];
+
+      if (day.date === getTodayText()) {
+        classes.push('today');
+      }
+
+      if (day.weekday === 0) {
+        classes.push('sunday-bg');
+      }
+
+      if (day.weekday === 6) {
+        classes.push('saturday-bg');
+      }
+
+      if (isOperationalAllRest(day)) {
+        classes.push('all-rest');
+      }
+
+      return classes.join(' ');
+    }
+
     function getDefaultShiftDate(data) {
       const days = data.days || [];
       const todayText = getTodayText();
@@ -1762,19 +2090,53 @@
       return days[0] ? days[0].date : '';
     }
 
-    function moveShiftMonth(offset) {
-      if (offset === 0) {
-        const now = new Date();
-        state.shiftYear = now.getFullYear();
-        state.shiftMonth = now.getMonth() + 1;
-      } else {
-        const date = new Date(state.shiftYear, state.shiftMonth - 1 + offset, 1);
-        state.shiftYear = date.getFullYear();
-        state.shiftMonth = date.getMonth() + 1;
+    function moveShiftPeriod(offset) {
+      if (state.shiftViewMode === 'week') {
+        const baseDate = parseDateText(state.selectedShiftDate || getTodayText());
+        baseDate.setDate(baseDate.getDate() + offset * 7);
+
+        state.selectedShiftDate = dateTextFromDate(baseDate);
+        state.shiftYear = baseDate.getFullYear();
+        state.shiftMonth = baseDate.getMonth() + 1;
+
+        loadShiftCalendar();
+        return;
       }
 
+      const date = new Date(state.shiftYear, state.shiftMonth - 1 + offset, 1);
+      state.shiftYear = date.getFullYear();
+      state.shiftMonth = date.getMonth() + 1;
       state.selectedShiftDate = '';
+
       loadShiftCalendar();
+    }
+
+    function resetShiftPeriod() {
+      const now = new Date();
+
+      state.shiftYear = now.getFullYear();
+      state.shiftMonth = now.getMonth() + 1;
+      state.selectedShiftDate = getTodayText();
+
+      loadShiftCalendar();
+    }
+
+    function getWeekDateTexts(dateText) {
+      const baseDate = parseDateText(dateText || getTodayText());
+      const dayOfWeek = baseDate.getDay();
+
+      const start = new Date(baseDate);
+      start.setDate(baseDate.getDate() - dayOfWeek);
+
+      const result = [];
+
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(start);
+        d.setDate(start.getDate() + i);
+        result.push(dateTextFromDate(d));
+      }
+
+      return result;
     }
 
     function isMobileView() {
@@ -1782,12 +2144,35 @@
     }
 
     function getTodayText() {
-      const now = new Date();
-      const y = now.getFullYear();
-      const m = String(now.getMonth() + 1).padStart(2, '0');
-      const d = String(now.getDate()).padStart(2, '0');
+      return dateTextFromDate(new Date());
+    }
+
+    function parseDateText(dateText) {
+      if (!dateText) {
+        return new Date();
+      }
+
+      const parts = String(dateText).replaceAll('/', '-').split('-');
+      const y = Number(parts[0]);
+      const m = Number(parts[1]);
+      const d = Number(parts[2]);
+
+      return new Date(y, m - 1, d);
+    }
+
+    function dateTextFromDate(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
 
       return `${y}-${m}-${d}`;
+    }
+
+    function formatDateWithWeekday(dateText) {
+      const date = parseDateText(dateText);
+      const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
+
+      return `${formatDateForDisplay(dateText)}（${weekdays[date.getDay()]}）`;
     }
 
     function getActivePageId() {
