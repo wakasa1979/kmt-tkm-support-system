@@ -107,6 +107,15 @@
       margin: 0 0 12px;
     }
 
+    .section-title {
+      font-size: 15px;
+      font-weight: 800;
+      margin: 22px 0 8px;
+      padding-left: 10px;
+      border-left: 4px solid var(--main);
+      color: var(--main);
+    }
+
     .label {
       display: block;
       font-size: 13px;
@@ -222,6 +231,16 @@
       gap: 10px;
     }
 
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .form-grid .full {
+      grid-column: 1 / -1;
+    }
+
     .list {
       display: flex;
       flex-direction: column;
@@ -284,6 +303,11 @@
     .badge.red {
       background: #fee2e2;
       color: #b91c1c;
+    }
+
+    .badge.purple {
+      background: #ede9fe;
+      color: #6d28d9;
     }
 
     .detail-row {
@@ -387,6 +411,10 @@
       }
 
       .filter-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .form-grid {
         grid-template-columns: 1fr;
       }
 
@@ -500,6 +528,11 @@
           </div>
 
           <div>
+            <label class="label" for="filterCategory2">区分2</label>
+            <select id="filterCategory2" class="select"></select>
+          </div>
+
+          <div>
             <label class="label" for="filterMaintenanceType">メンテ区分</label>
             <select id="filterMaintenanceType" class="select"></select>
           </div>
@@ -511,7 +544,7 @@
 
           <div>
             <label class="label" for="filterKeyword">キーワード</label>
-            <input id="filterKeyword" class="input" type="text" placeholder="名称・場所・備考など" />
+            <input id="filterKeyword" class="input" type="text" placeholder="名称・場所・責任者・備考など" />
           </div>
         </div>
 
@@ -552,20 +585,46 @@
 
         <input id="formKariokiId" type="hidden" />
 
-        <label class="label" for="formBuilding">建屋</label>
-        <select id="formBuilding" class="select"></select>
+        <div class="section-title">基本情報</div>
 
-        <label class="label" for="formFloor">フロア</label>
-        <input id="formFloor" class="input" type="text" placeholder="例：2F / 5F" />
+        <div class="form-grid">
+          <div>
+            <label class="label" for="formBuilding">建屋</label>
+            <select id="formBuilding" class="select"></select>
+          </div>
 
-        <label class="label" for="formKariokiName">仮置き場名称</label>
-        <input id="formKariokiName" class="input" type="text" placeholder="例：Y5客先1" />
+          <div>
+            <label class="label" for="formFloor">フロア</label>
+            <input id="formFloor" class="input" type="text" placeholder="例：2F / 5F" />
+          </div>
 
-        <label class="label" for="formCategory">区分</label>
-        <select id="formCategory" class="select"></select>
+          <div class="full">
+            <label class="label" for="formKariokiName">仮置き場名称</label>
+            <input id="formKariokiName" class="input" type="text" placeholder="例：Y5客先1" />
+          </div>
 
-        <label class="label" for="formMaintenanceType">メンテ区分</label>
-        <select id="formMaintenanceType" class="select"></select>
+          <div>
+            <label class="label" for="formCategory">区分</label>
+            <select id="formCategory" class="select"></select>
+          </div>
+
+          <div>
+            <label class="label" for="formCategory2">区分2</label>
+            <select id="formCategory2" class="select"></select>
+          </div>
+
+          <div>
+            <label class="label" for="formMaintenanceType">メンテ区分</label>
+            <select id="formMaintenanceType" class="select"></select>
+          </div>
+
+          <div>
+            <label class="label" for="formStatus">ステータス</label>
+            <select id="formStatus" class="select"></select>
+          </div>
+        </div>
+
+        <div class="section-title">場所・用途</div>
 
         <label class="label" for="formPurpose">用途</label>
         <input id="formPurpose" class="input" type="text" placeholder="例：使用済みパーツ仮置き" />
@@ -573,17 +632,50 @@
         <label class="label" for="formLocationText">場所</label>
         <input id="formLocationText" class="input" type="text" placeholder="例：Y5-2F-南36柱" />
 
-        <label class="label" for="formAreaSize">広さ</label>
+        <label class="label" for="formAreaSize">仮置き場所サイズ</label>
         <input id="formAreaSize" class="input" type="text" placeholder="例：パレット2枚分 / 約2m×3m" />
 
         <label class="label" for="formNearestRoom">最寄前室</label>
         <input id="formNearestRoom" class="input" type="text" placeholder="例：Y5南前室" />
 
+        <div class="section-title">仮置き期間</div>
+
+        <div class="form-grid">
+          <div>
+            <label class="label" for="formKariokiStartDate">開始日</label>
+            <input id="formKariokiStartDate" class="input" type="date" />
+          </div>
+
+          <div>
+            <label class="label" for="formKariokiEndDate">終了日</label>
+            <input id="formKariokiEndDate" class="input" type="date" />
+          </div>
+        </div>
+
         <label class="label" for="formExpireDate">使用期限</label>
         <input id="formExpireDate" class="input" type="date" />
 
-        <label class="label" for="formStatus">ステータス</label>
-        <select id="formStatus" class="select"></select>
+        <div class="section-title">申請・管理情報</div>
+
+        <label class="label" for="formApplicantDeptPhone">申請課電話番号（内線5桁）</label>
+        <input id="formApplicantDeptPhone" class="input" type="text" inputmode="numeric" maxlength="5" placeholder="例：12345" />
+
+        <label class="label" for="formManagerDept">管理者所属</label>
+        <input id="formManagerDept" class="input" type="text" placeholder="例：TKMサポート" />
+
+        <label class="label" for="formManagerName">管理責任者名</label>
+        <input id="formManagerName" class="input" type="text" placeholder="例：若佐" />
+
+        <label class="label" for="formManagerPhone">管理責任者番号（内線5桁）</label>
+        <input id="formManagerPhone" class="input" type="text" inputmode="numeric" maxlength="5" placeholder="例：12345" />
+
+        <label class="label" for="formUserName">使用者名</label>
+        <input id="formUserName" class="input" type="text" placeholder="例：使用者名" />
+
+        <label class="label" for="formUserPhone">使用者番号（内線5桁）</label>
+        <input id="formUserPhone" class="input" type="text" inputmode="numeric" maxlength="5" placeholder="例：12345" />
+
+        <div class="section-title">備考</div>
 
         <label class="label" for="formNote">備考</label>
         <textarea id="formNote" class="textarea" placeholder="補足事項を入力"></textarea>
@@ -612,9 +704,6 @@
   </div>
 
   <script>
-    /********************************************************
-     * ここにGASのWebアプリURLを入れてください
-     ********************************************************/
     const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyZCJYCEsEp5bZbCn8ZO1pCH_F844c1OKOYFDgErQWYp3q_ge0XTaTw8UgjRAhWbFjSfQ/exec';
 
     const state = {
@@ -813,10 +902,12 @@
       renderBuildingSelect('formBuilding', false);
 
       renderOptionSelect('filterCategory', state.options.category || [], true);
+      renderOptionSelect('filterCategory2', state.options.category2 || [], true);
       renderOptionSelect('filterMaintenanceType', state.options.maintenanceType || [], true);
       renderOptionSelect('filterStatus', state.options.kariokiStatus || [], true);
 
       renderOptionSelect('formCategory', state.options.category || [], false);
+      renderOptionSelect('formCategory2', state.options.category2 || [], false);
       renderOptionSelect('formMaintenanceType', state.options.maintenanceType || [], false);
       renderOptionSelect('formStatus', state.options.kariokiStatus || [], false);
     }
@@ -875,6 +966,7 @@
           buildingCode: document.getElementById('filterBuilding').value,
           floor: document.getElementById('filterFloor').value.trim(),
           category: document.getElementById('filterCategory').value,
+          category2: document.getElementById('filterCategory2').value,
           maintenanceType: document.getElementById('filterMaintenanceType').value,
           status: document.getElementById('filterStatus').value,
           keyword: document.getElementById('filterKeyword').value.trim()
@@ -909,16 +1001,20 @@
         card.style.textAlign = 'left';
         card.onclick = () => openDetail(item.kariokiId);
 
+        const periodText = makePeriodText(item.kariokiStartDate, item.kariokiEndDate);
+
         card.innerHTML = `
           <div class="list-card-title">${escapeHtml(item.kariokiName || '')}</div>
           <div class="list-card-meta">
             ID：${escapeHtml(item.kariokiId || '')}<br>
             建屋：${escapeHtml(item.buildingShortName || '')} / ${escapeHtml(item.buildingName || '')}　
             フロア：${escapeHtml(item.floor || '')}<br>
-            場所：${escapeHtml(item.locationText || '')}
+            場所：${escapeHtml(item.locationText || '')}<br>
+            仮置き期間：${escapeHtml(periodText || '未入力')}
           </div>
           <div class="badge-row">
             ${badge(item.category, 'blue')}
+            ${badge(item.category2, 'purple')}
             ${badge(item.maintenanceType, 'green')}
             ${statusBadge(item.status)}
           </div>
@@ -932,6 +1028,7 @@
       document.getElementById('filterBuilding').value = '';
       document.getElementById('filterFloor').value = '';
       document.getElementById('filterCategory').value = '';
+      document.getElementById('filterCategory2').value = '';
       document.getElementById('filterMaintenanceType').value = '';
       document.getElementById('filterStatus').value = '';
       document.getElementById('filterKeyword').value = '';
@@ -968,12 +1065,22 @@
         ${detailRow('建屋', `${item.buildingName || ''} / ${item.buildingShortName || ''}`)}
         ${detailRow('フロア', item.floor)}
         ${detailRow('区分', item.category)}
+        ${detailRow('区分2', item.category2)}
         ${detailRow('メンテ区分', item.maintenanceType)}
         ${detailRow('用途', item.purpose)}
         ${detailRow('場所', item.locationText)}
-        ${detailRow('広さ', item.areaSize)}
+        ${detailRow('仮置き場所サイズ', item.areaSize)}
         ${detailRow('最寄前室', item.nearestRoom)}
+        ${detailRow('仮置き期間', makePeriodText(item.kariokiStartDate, item.kariokiEndDate))}
+        ${detailRow('仮置き開始日', formatDateForDisplay(item.kariokiStartDate))}
+        ${detailRow('仮置き終了日', formatDateForDisplay(item.kariokiEndDate))}
         ${detailRow('使用期限', formatDateForDisplay(item.expireDate))}
+        ${detailRow('申請課電話番号', item.applicantDeptPhone)}
+        ${detailRow('管理者所属', item.managerDept)}
+        ${detailRow('管理責任者名', item.managerName)}
+        ${detailRow('管理責任者番号', item.managerPhone)}
+        ${detailRow('使用者名', item.userName)}
+        ${detailRow('使用者番号', item.userPhone)}
         ${detailRow('ステータス', item.status)}
         ${detailRow('備考', item.note)}
         ${detailRow('登録者', item.createdBy)}
@@ -1025,12 +1132,21 @@
       document.getElementById('formFloor').value = '';
       document.getElementById('formKariokiName').value = '';
       document.getElementById('formCategory').value = '客先';
+      document.getElementById('formCategory2').value = '使用前パーツ置き場';
       document.getElementById('formMaintenanceType').value = '未設定';
       document.getElementById('formPurpose').value = '';
       document.getElementById('formLocationText').value = '';
       document.getElementById('formAreaSize').value = '';
       document.getElementById('formNearestRoom').value = '';
+      document.getElementById('formKariokiStartDate').value = '';
+      document.getElementById('formKariokiEndDate').value = '';
       document.getElementById('formExpireDate').value = '';
+      document.getElementById('formApplicantDeptPhone').value = '';
+      document.getElementById('formManagerDept').value = '';
+      document.getElementById('formManagerName').value = '';
+      document.getElementById('formManagerPhone').value = '';
+      document.getElementById('formUserName').value = '';
+      document.getElementById('formUserPhone').value = '';
       document.getElementById('formStatus').value = '使用中';
       document.getElementById('formNote').value = '';
     }
@@ -1041,12 +1157,21 @@
       document.getElementById('formFloor').value = item.floor || '';
       document.getElementById('formKariokiName').value = item.kariokiName || '';
       document.getElementById('formCategory').value = item.category || '客先';
+      document.getElementById('formCategory2').value = item.category2 || '使用前パーツ置き場';
       document.getElementById('formMaintenanceType').value = item.maintenanceType || '未設定';
       document.getElementById('formPurpose').value = item.purpose || '';
       document.getElementById('formLocationText').value = item.locationText || '';
       document.getElementById('formAreaSize').value = item.areaSize || '';
       document.getElementById('formNearestRoom').value = item.nearestRoom || '';
+      document.getElementById('formKariokiStartDate').value = formatDateForInput(item.kariokiStartDate);
+      document.getElementById('formKariokiEndDate').value = formatDateForInput(item.kariokiEndDate);
       document.getElementById('formExpireDate').value = formatDateForInput(item.expireDate);
+      document.getElementById('formApplicantDeptPhone').value = item.applicantDeptPhone || '';
+      document.getElementById('formManagerDept').value = item.managerDept || '';
+      document.getElementById('formManagerName').value = item.managerName || '';
+      document.getElementById('formManagerPhone').value = item.managerPhone || '';
+      document.getElementById('formUserName').value = item.userName || '';
+      document.getElementById('formUserPhone').value = item.userPhone || '';
       document.getElementById('formStatus').value = item.status || '使用中';
       document.getElementById('formNote').value = item.note || '';
     }
@@ -1058,12 +1183,21 @@
         floor: document.getElementById('formFloor').value.trim(),
         kariokiName: document.getElementById('formKariokiName').value.trim(),
         category: document.getElementById('formCategory').value,
+        category2: document.getElementById('formCategory2').value,
         maintenanceType: document.getElementById('formMaintenanceType').value,
         purpose: document.getElementById('formPurpose').value.trim(),
         locationText: document.getElementById('formLocationText').value.trim(),
         areaSize: document.getElementById('formAreaSize').value.trim(),
         nearestRoom: document.getElementById('formNearestRoom').value.trim(),
+        kariokiStartDate: document.getElementById('formKariokiStartDate').value,
+        kariokiEndDate: document.getElementById('formKariokiEndDate').value,
         expireDate: document.getElementById('formExpireDate').value,
+        applicantDeptPhone: document.getElementById('formApplicantDeptPhone').value.trim(),
+        managerDept: document.getElementById('formManagerDept').value.trim(),
+        managerName: document.getElementById('formManagerName').value.trim(),
+        managerPhone: document.getElementById('formManagerPhone').value.trim(),
+        userName: document.getElementById('formUserName').value.trim(),
+        userPhone: document.getElementById('formUserPhone').value.trim(),
         status: document.getElementById('formStatus').value,
         note: document.getElementById('formNote').value.trim()
       };
@@ -1080,6 +1214,26 @@
 
       if (!data.kariokiName) {
         showError('仮置き場名称を入力してください。');
+        return;
+      }
+
+      if (!isValidExtension(data.applicantDeptPhone)) {
+        showError('申請課電話番号は内線5桁で入力してください。');
+        return;
+      }
+
+      if (!isValidExtension(data.managerPhone)) {
+        showError('管理責任者番号は内線5桁で入力してください。');
+        return;
+      }
+
+      if (!isValidExtension(data.userPhone)) {
+        showError('使用者番号は内線5桁で入力してください。');
+        return;
+      }
+
+      if (data.kariokiStartDate && data.kariokiEndDate && data.kariokiStartDate > data.kariokiEndDate) {
+        showError('仮置き期間の終了日は開始日以降にしてください。');
         return;
       }
 
@@ -1285,7 +1439,40 @@
         return text.replaceAll('-', '/');
       }
 
+      if (/^\d{4}\/\d{2}\/\d{2}/.test(text)) {
+        return text.slice(0, 10);
+      }
+
       return text;
+    }
+
+    function makePeriodText(startDate, endDate) {
+      const start = formatDateForDisplay(startDate);
+      const end = formatDateForDisplay(endDate);
+
+      if (start && end) {
+        return `${start} 〜 ${end}`;
+      }
+
+      if (start && !end) {
+        return `${start} 〜`;
+      }
+
+      if (!start && end) {
+        return `〜 ${end}`;
+      }
+
+      return '';
+    }
+
+    function isValidExtension(value) {
+      const text = String(value || '').trim();
+
+      if (!text) {
+        return true;
+      }
+
+      return /^\d{5}$/.test(text);
     }
   </script>
 </body>
