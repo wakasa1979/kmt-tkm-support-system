@@ -469,6 +469,8 @@
       overflow: hidden;
       text-align: left;
       position: relative;
+      display: flex;
+      flex-direction: column;
     }
 
     .shift-day.empty {
@@ -504,18 +506,25 @@
     }
 
     .shift-day-head {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
+      position: relative;
+      min-height: 28px;
+      margin-bottom: 6px;
+      padding-right: 78px;
+      flex: 0 0 auto;
+    }
+
+    .shift-date-row {
+      display: inline-flex;
+      align-items: center;
       gap: 4px;
+      flex-wrap: nowrap;
+      white-space: nowrap;
       min-height: 24px;
-      margin-bottom: 4px;
     }
 
     .shift-date {
       font-weight: 900;
       font-size: 12px;
-      margin-bottom: 0;
       line-height: 1.2;
     }
 
@@ -529,19 +538,25 @@
 
     .today-mini {
       display: inline-flex;
-      margin-left: 4px;
-      padding: 2px 5px;
+      align-items: center;
+      justify-content: center;
+      padding: 2px 6px;
       border-radius: 999px;
       background: #2563eb;
       color: #fff;
       font-size: 9px;
       font-weight: 900;
-      vertical-align: middle;
+      line-height: 1;
+      white-space: nowrap;
+      flex: 0 0 auto;
     }
 
     .shift-manager-slot {
-      min-width: 72px;
-      min-height: 20px;
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 74px;
+      min-height: 24px;
       display: flex;
       justify-content: flex-end;
       align-items: flex-start;
@@ -552,8 +567,9 @@
       align-items: center;
       justify-content: center;
       border-radius: 999px;
-      background: #111827;
-      color: #fff;
+      background: #dbeafe;
+      color: #1d4ed8;
+      border: 1px solid #93c5fd;
       font-size: 10px;
       font-weight: 900;
       padding: 4px 7px;
@@ -563,6 +579,7 @@
 
     .shift-workers-area {
       margin-top: 0;
+      flex: 1 1 auto;
     }
 
     .shift-worker {
@@ -705,9 +722,16 @@
       color: #374151;
     }
 
-    .shift-summary-pill.manager {
-      background: #111827;
-      color: #fff;
+    .shift-summary-pill.manager-present {
+      background: #dbeafe;
+      color: #1d4ed8;
+      border: 1px solid #93c5fd;
+    }
+
+    .shift-summary-pill.manager-absent {
+      background: #f3f4f6;
+      color: #6b7280;
+      border: 1px solid #d1d5db;
     }
 
     @media (max-width: 520px) {
@@ -753,11 +777,15 @@
       .shift-day-head {
         min-height: 20px;
         margin-bottom: 3px;
+        padding-right: 26px;
+      }
+
+      .shift-date-row {
+        min-height: 18px;
       }
 
       .shift-date {
         font-size: 11px;
-        margin-bottom: 0;
       }
 
       .today-mini {
@@ -765,7 +793,7 @@
       }
 
       .shift-manager-slot {
-        min-width: 24px;
+        width: 24px;
         min-height: 18px;
       }
 
@@ -1889,7 +1917,10 @@
 
         let html = `
           <div class="shift-day-head">
-            <div class="shift-date ${dateClass}">${day.day}${todayLabel}</div>
+            <div class="shift-date-row">
+              <span class="shift-date ${dateClass}">${day.day}</span>
+              ${todayLabel}
+            </div>
             <div class="shift-manager-slot">
               ${managerWorkers.length > 0
                 ? `<span class="shift-manager-mark" title="藤本在席">${managerMarkText}</span>`
@@ -1975,12 +2006,15 @@
           const managerWorkers = getManagerWorkers(day);
           const managerRests = getManagerRests(day);
 
+          const managerLabel = managerWorkers.length > 0 ? '藤本在席' : '藤本不在';
+          const managerClass = managerWorkers.length > 0 ? 'manager-present' : 'manager-absent';
+
           let html = `
             <div class="shift-week-date">${escapeHtml(formatDateWithWeekday(day.date))}</div>
             <div class="shift-week-summary">
               <span class="shift-summary-pill">実働${operationalWorkers.length}</span>
               <span class="shift-summary-pill rest">休み${operationalRests.length}</span>
-              <span class="shift-summary-pill manager">${managerWorkers.length > 0 ? '藤本在席' : '藤本不在'}</span>
+              <span class="shift-summary-pill ${managerClass}">${managerLabel}</span>
             </div>
           `;
 
