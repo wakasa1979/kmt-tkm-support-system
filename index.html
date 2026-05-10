@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>KMT inc. TKM Support業務用システム</title>
+
+  <style>
+    :root {
+      --bg: #f3f4f6;
+      --card: #ffffff;
+      --text: #111827;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --main: #1f2937;
+      --main-soft: #374151;
+      --accent: #2563eb;
+      --danger: #dc2626;
+      --warning: #f59e0b;
+      --success: #16a34a;
+      --radius: 18px;
+      --shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .app {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 16px;
+      padding-bottom: 48px;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #111827, #374151);
+      color: #fff;
+      border-radius: 0 0 24px 24px;
+      padding: 20px 16px 24px;
+      margin: 0 -16px 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .header-title {
+      font-size: 20px;
+      font-weight: 800;
+      line-height: 1.35;
+      margin: 0 0 4px;
+    }
+
+    .header-subtitle {
+      font-size: 13px;
+      opacity: 0.85;
+      margin: 0;
+    }
+
+    .user-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-top: 14px;
+      font-size: 13px;
+      opacity: 0.95;
+    }
+
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      margin-bottom: 14px;
+      border: 1px solid rgba(229, 231, 235, 0.8);
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 800;
+      margin: 0 0 12px;
+    }
+
+    .label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--main);
+      margin: 12px 0 6px;
+    }
+
+    .input,
+    .select,
+    .textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+      background: #fff;
+      color: var(--text);
+      outline: none;
+    }
+
+    .textarea {
+      min-height: 92px;
+      resize: vertical;
+    }
+
+    .input:focus,
+    .select:focus,
+    .textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+    }
+
+    .btn {
+      width: 100%;
+      border: none;
+      border-radius: 14px;
+      padding: 13px 14px;
+      font-weight: 800;
+      background: var(--main);
+      color: #fff;
+      margin-top: 10px;
+    }
+
+    .btn:hover {
+      background: var(--main-soft);
+    }
+
+    .btn.secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .btn.blue {
+      background: var(--accent);
+    }
+
+    .btn.danger {
+      background: var(--danger);
+    }
+
+    .btn.success {
+      background: var(--success);
+    }
+
+    .btn.warning {
+      background: var(--warning);
+      color: #111827;
+    }
+
+    .btn.small {
+      width: auto;
+      padding: 8px 12px;
+      font-size: 13px;
+      margin-top: 0;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .menu-button {
+      min-height: 96px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #fff;
+      box-shadow: var(--shadow);
+      padding: 14px;
+      text-align: left;
+    }
+
+    .menu-button strong {
+      display: block;
+      font-size: 16px;
+      margin-bottom: 6px;
+    }
+
+    .menu-button span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .menu-button.disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .list-card {
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+    }
+
+    .list-card-title {
+      font-size: 16px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .list-card-meta {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 4px 9px;
+      background: #f3f4f6;
+      color: #374151;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .badge.blue {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    .badge.green {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .badge.orange {
+      background: #ffedd5;
+      color: #c2410c;
+    }
+
+    .badge.red {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .detail-row {
+      border-bottom: 1px solid var(--line);
+      padding: 10px 0;
+    }
+
+    .detail-label {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .detail-value {
+      font-size: 15px;
+      font-weight: 700;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .top-actions .btn {
+      margin-top: 0;
+    }
+
+    .message {
+      display: none;
+      padding: 12px;
+      border-radius: 14px;
+      margin-bottom: 12px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .message.show {
+      display: block;
+    }
+
+    .message.success {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .message.error {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .message.info {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 11px;
+      margin-top: 24px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .loading {
+      opacity: 0.65;
+      pointer-events: none;
+    }
+
+    .log-card {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+      background: #fff;
+      margin-bottom: 10px;
+      font-size: 13px;
+    }
+
+    .log-card strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    @media (max-width: 520px) {
+      .app {
+        padding: 12px;
+      }
+
+      .header {
+        margin: 0 -12px 14px;
+        padding: 18px 14px 22px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .filter-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .top-actions {
+        flex-direction: column;
+      }
+
+      .btn.small {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app" id="app">
+    <header class="header">
+      <h1 class="header-title">
+        KMT inc. TKM Support業務用システム
+      </h1>
+      <p class="header-subtitle">
+        TKM Support Parts Management System
+      </p>
+
+      <div class="user-bar" id="userBar" style="display:none;">
+        <span id="loginUserText"></span>
+        <button class="btn small secondary" onclick="logout()">ログアウト</button>
+      </div>
+    </header>
+
+    <div id="message" class="message"></div>
+
+    <!-- ログイン画面 -->
+    <section id="pageLogin" class="page active">
+      <div class="card">
+        <h2 class="card-title">ログイン</h2>
+
+        <label class="label" for="loginUserId">ユーザーID</label>
+        <input id="loginUserId" class="input" type="text" autocomplete="username" placeholder="例：wakasa" />
+
+        <label class="label" for="loginPassword">パスワード</label>
+        <input id="loginPassword" class="input" type="password" autocomplete="current-password" placeholder="パスワード" />
+
+        <button class="btn blue" onclick="login()">ログイン</button>
+      </div>
+    </section>
+
+    <!-- ホーム画面 -->
+    <section id="pageHome" class="page">
+      <div class="card">
+        <h2 class="card-title">メニュー</h2>
+
+        <div class="grid">
+          <button class="menu-button" onclick="openSearchPage()">
+            <strong>仮置き場検索</strong>
+            <span>建屋・区分・キーワードで仮置き場を検索します。</span>
+          </button>
+
+          <button class="menu-button" onclick="openCreateForm()">
+            <strong>仮置き場登録</strong>
+            <span>新しい仮置き場を登録します。</span>
+          </button>
+
+          <button class="menu-button" onclick="openLogPage()">
+            <strong>操作履歴</strong>
+            <span>登録・更新・削除などの操作履歴を確認します。</span>
+          </button>
+
+          <button class="menu-button disabled" onclick="showInfo('在庫管理は次回以降に追加予定です。')">
+            <strong>在庫管理</strong>
+            <span>準備中</span>
+          </button>
+
+          <button class="menu-button disabled" onclick="showInfo('FRAT管理は次回以降に追加予定です。')">
+            <strong>FRAT管理</strong>
+            <span>準備中</span>
+          </button>
+
+          <button class="menu-button disabled" onclick="showInfo('KIT管理は次回以降に追加予定です。')">
+            <strong>KIT管理</strong>
+            <span>準備中</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 仮置き場検索画面 -->
+    <section id="pageSearch" class="page">
+      <div class="top-actions">
+        <button class="btn small secondary" onclick="showPage('pageHome')">← ホーム</button>
+        <button class="btn small blue" onclick="openCreateForm()">＋ 新規登録</button>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">仮置き場検索</h2>
+
+        <div class="filter-grid">
+          <div>
+            <label class="label" for="filterBuilding">建屋</label>
+            <select id="filterBuilding" class="select"></select>
+          </div>
+
+          <div>
+            <label class="label" for="filterFloor">フロア</label>
+            <input id="filterFloor" class="input" type="text" placeholder="例：2F" />
+          </div>
+
+          <div>
+            <label class="label" for="filterCategory">区分</label>
+            <select id="filterCategory" class="select"></select>
+          </div>
+
+          <div>
+            <label class="label" for="filterMaintenanceType">メンテ区分</label>
+            <select id="filterMaintenanceType" class="select"></select>
+          </div>
+
+          <div>
+            <label class="label" for="filterStatus">ステータス</label>
+            <select id="filterStatus" class="select"></select>
+          </div>
+
+          <div>
+            <label class="label" for="filterKeyword">キーワード</label>
+            <input id="filterKeyword" class="input" type="text" placeholder="名称・場所・備考など" />
+          </div>
+        </div>
+
+        <button class="btn blue" onclick="loadKariokiList()">検索</button>
+        <button class="btn secondary" onclick="clearFilters()">条件クリア</button>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">検索結果 <span id="listCount"></span></h2>
+        <div id="kariokiList" class="list"></div>
+      </div>
+    </section>
+
+    <!-- 詳細画面 -->
+    <section id="pageDetail" class="page">
+      <div class="top-actions">
+        <button class="btn small secondary" onclick="showPage('pageSearch')">← 一覧へ</button>
+        <button class="btn small blue" onclick="openEditForm()">編集</button>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">仮置き場詳細</h2>
+        <div id="detailArea"></div>
+
+        <button class="btn warning" onclick="quickChangeStatus()">ステータス変更</button>
+        <button class="btn danger" onclick="deleteCurrentKarioki()">削除</button>
+      </div>
+    </section>
+
+    <!-- 登録・編集画面 -->
+    <section id="pageForm" class="page">
+      <div class="top-actions">
+        <button class="btn small secondary" onclick="backFromForm()">← 戻る</button>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title" id="formTitle">仮置き場登録</h2>
+
+        <input id="formKariokiId" type="hidden" />
+
+        <label class="label" for="formBuilding">建屋</label>
+        <select id="formBuilding" class="select"></select>
+
+        <label class="label" for="formFloor">フロア</label>
+        <input id="formFloor" class="input" type="text" placeholder="例：2F / 5F" />
+
+        <label class="label" for="formKariokiName">仮置き場名称</label>
+        <input id="formKariokiName" class="input" type="text" placeholder="例：Y5客先1" />
+
+        <label class="label" for="formCategory">区分</label>
+        <select id="formCategory" class="select"></select>
+
+        <label class="label" for="formMaintenanceType">メンテ区分</label>
+        <select id="formMaintenanceType" class="select"></select>
+
+        <label class="label" for="formPurpose">用途</label>
+        <input id="formPurpose" class="input" type="text" placeholder="例：使用済みパーツ仮置き" />
+
+        <label class="label" for="formLocationText">場所</label>
+        <input id="formLocationText" class="input" type="text" placeholder="例：Y5-2F-南36柱" />
+
+        <label class="label" for="formAreaSize">広さ</label>
+        <input id="formAreaSize" class="input" type="text" placeholder="例：パレット2枚分 / 約2m×3m" />
+
+        <label class="label" for="formNearestRoom">最寄前室</label>
+        <input id="formNearestRoom" class="input" type="text" placeholder="例：Y5南前室" />
+
+        <label class="label" for="formExpireDate">使用期限</label>
+        <input id="formExpireDate" class="input" type="date" />
+
+        <label class="label" for="formStatus">ステータス</label>
+        <select id="formStatus" class="select"></select>
+
+        <label class="label" for="formNote">備考</label>
+        <textarea id="formNote" class="textarea" placeholder="補足事項を入力"></textarea>
+
+        <button class="btn success" onclick="saveKarioki()">保存</button>
+      </div>
+    </section>
+
+    <!-- 操作履歴画面 -->
+    <section id="pageLog" class="page">
+      <div class="top-actions">
+        <button class="btn small secondary" onclick="showPage('pageHome')">← ホーム</button>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">操作履歴</h2>
+        <button class="btn blue" onclick="loadOperationLog()">最新履歴を取得</button>
+      </div>
+
+      <div id="logList"></div>
+    </section>
+
+    <footer class="footer">
+      System provided by Yoshifumi Wakasa
+    </footer>
+  </div>
+
+  <script>
+    /********************************************************
+     * ここにGASのWebアプリURLを入れてください
+     ********************************************************/
+    const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyZCJYCEsEp5bZbCn8ZO1pCH_F844c1OKOYFDgErQWYp3q_ge0XTaTw8UgjRAhWbFjSfQ/exec';
+
+    const state = {
+      token: localStorage.getItem('kmt_token') || '',
+      user: JSON.parse(localStorage.getItem('kmt_user') || 'null'),
+      buildings: [],
+      options: {},
+      currentList: [],
+      currentItem: null,
+      formMode: 'create',
+      lastPageBeforeForm: 'pageHome'
+    };
+
+    window.addEventListener('load', async () => {
+      if (state.token && state.user) {
+        updateUserBar();
+        showPage('pageHome');
+
+        try {
+          await loadMasterData();
+        } catch (error) {
+          showError(error.message);
+          logout(false);
+        }
+      } else {
+        showPage('pageLogin');
+      }
+    });
+
+    async function apiRequest(action, payload = {}) {
+      if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL.includes('ここにGAS')) {
+        throw new Error('GAS_WEB_APP_URL が未設定です。index.html内のURLを設定してください。');
+      }
+
+      const sendPayload = { ...payload };
+
+      if (state.token && action !== 'login') {
+        sendPayload.token = state.token;
+      }
+
+      setLoading(true);
+
+      try {
+        const response = await fetch(GAS_WEB_APP_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'text/plain;charset=utf-8'
+          },
+          body: JSON.stringify({
+            action: action,
+            payload: sendPayload
+          })
+        });
+
+        const text = await response.text();
+
+        let data;
+
+        try {
+          data = JSON.parse(text);
+        } catch (error) {
+          console.error(text);
+          throw new Error('GASからの応答をJSONとして読み取れませんでした。デプロイURLや権限設定を確認してください。');
+        }
+
+        if (!data.success) {
+          throw new Error(data.message || '処理に失敗しました。');
+        }
+
+        return data;
+
+      } catch (error) {
+        if (String(error.message).includes('Failed to fetch')) {
+          throw new Error('GASに接続できません。Webアプリのデプロイ設定、アクセス権限、URLを確認してください。');
+        }
+
+        throw error;
+
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    function setLoading(isLoading) {
+      document.getElementById('app').classList.toggle('loading', isLoading);
+    }
+
+    function showPage(pageId) {
+      document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
+      });
+
+      document.getElementById(pageId).classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      clearMessage();
+    }
+
+    function updateUserBar() {
+      const userBar = document.getElementById('userBar');
+      const loginUserText = document.getElementById('loginUserText');
+
+      if (state.user) {
+        userBar.style.display = 'flex';
+        loginUserText.textContent = `${state.user.userName}（${state.user.role}）`;
+      } else {
+        userBar.style.display = 'none';
+        loginUserText.textContent = '';
+      }
+    }
+
+    function showMessage(type, text) {
+      const message = document.getElementById('message');
+      message.className = `message show ${type}`;
+      message.textContent = text;
+
+      setTimeout(() => {
+        clearMessage();
+      }, 4500);
+    }
+
+    function showSuccess(text) {
+      showMessage('success', text);
+    }
+
+    function showError(text) {
+      showMessage('error', text);
+    }
+
+    function showInfo(text) {
+      showMessage('info', text);
+    }
+
+    function clearMessage() {
+      const message = document.getElementById('message');
+      message.className = 'message';
+      message.textContent = '';
+    }
+
+    async function login() {
+      const userId = document.getElementById('loginUserId').value.trim();
+      const password = document.getElementById('loginPassword').value.trim();
+
+      if (!userId || !password) {
+        showError('ユーザーIDとパスワードを入力してください。');
+        return;
+      }
+
+      try {
+        const result = await apiRequest('login', { userId, password });
+
+        state.token = result.token;
+        state.user = result.user;
+
+        localStorage.setItem('kmt_token', state.token);
+        localStorage.setItem('kmt_user', JSON.stringify(state.user));
+
+        updateUserBar();
+
+        await loadMasterData();
+
+        showPage('pageHome');
+        showSuccess('ログインしました。');
+
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    function logout(showMsg = true) {
+      state.token = '';
+      state.user = null;
+      state.currentItem = null;
+
+      localStorage.removeItem('kmt_token');
+      localStorage.removeItem('kmt_user');
+
+      updateUserBar();
+      showPage('pageLogin');
+
+      if (showMsg) {
+        showInfo('ログアウトしました。');
+      }
+    }
+
+    async function loadMasterData() {
+      const result = await apiRequest('getMasterData');
+
+      state.buildings = result.buildings || [];
+      state.options = result.options || {};
+
+      renderSelectOptions();
+    }
+
+    function renderSelectOptions() {
+      renderBuildingSelect('filterBuilding', true);
+      renderBuildingSelect('formBuilding', false);
+
+      renderOptionSelect('filterCategory', state.options.category || [], true);
+      renderOptionSelect('filterMaintenanceType', state.options.maintenanceType || [], true);
+      renderOptionSelect('filterStatus', state.options.kariokiStatus || [], true);
+
+      renderOptionSelect('formCategory', state.options.category || [], false);
+      renderOptionSelect('formMaintenanceType', state.options.maintenanceType || [], false);
+      renderOptionSelect('formStatus', state.options.kariokiStatus || [], false);
+    }
+
+    function renderBuildingSelect(elementId, includeAll) {
+      const select = document.getElementById(elementId);
+
+      if (!select) return;
+
+      select.innerHTML = '';
+
+      if (includeAll) {
+        select.appendChild(createOption('', 'すべて'));
+      }
+
+      state.buildings.forEach(building => {
+        const label = `${building.shortName} / ${building.buildingName}${building.alias1 ? ' / ' + building.alias1 : ''}`;
+        select.appendChild(createOption(building.buildingCode, label));
+      });
+    }
+
+    function renderOptionSelect(elementId, options, includeAll) {
+      const select = document.getElementById(elementId);
+
+      if (!select) return;
+
+      select.innerHTML = '';
+
+      if (includeAll) {
+        select.appendChild(createOption('', 'すべて'));
+      }
+
+      options.forEach(value => {
+        select.appendChild(createOption(value, value));
+      });
+    }
+
+    function createOption(value, label) {
+      const option = document.createElement('option');
+      option.value = value;
+      option.textContent = label;
+      return option;
+    }
+
+    async function openSearchPage() {
+      showPage('pageSearch');
+
+      if (state.currentList.length === 0) {
+        await loadKariokiList();
+      }
+    }
+
+    async function loadKariokiList() {
+      try {
+        const filters = {
+          buildingCode: document.getElementById('filterBuilding').value,
+          floor: document.getElementById('filterFloor').value.trim(),
+          category: document.getElementById('filterCategory').value,
+          maintenanceType: document.getElementById('filterMaintenanceType').value,
+          status: document.getElementById('filterStatus').value,
+          keyword: document.getElementById('filterKeyword').value.trim()
+        };
+
+        const result = await apiRequest('getKariokiList', { filters });
+
+        state.currentList = result.data || [];
+
+        renderKariokiList();
+
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    function renderKariokiList() {
+      const list = document.getElementById('kariokiList');
+      const count = document.getElementById('listCount');
+
+      count.textContent = `（${state.currentList.length}件）`;
+      list.innerHTML = '';
+
+      if (state.currentList.length === 0) {
+        list.innerHTML = '<div class="list-card"><div class="list-card-meta">該当する仮置き場はありません。</div></div>';
+        return;
+      }
+
+      state.currentList.forEach(item => {
+        const card = document.createElement('button');
+        card.className = 'list-card';
+        card.style.textAlign = 'left';
+        card.onclick = () => openDetail(item.kariokiId);
+
+        card.innerHTML = `
+          <div class="list-card-title">${escapeHtml(item.kariokiName || '')}</div>
+          <div class="list-card-meta">
+            ID：${escapeHtml(item.kariokiId || '')}<br>
+            建屋：${escapeHtml(item.buildingShortName || '')} / ${escapeHtml(item.buildingName || '')}　
+            フロア：${escapeHtml(item.floor || '')}<br>
+            場所：${escapeHtml(item.locationText || '')}
+          </div>
+          <div class="badge-row">
+            ${badge(item.category, 'blue')}
+            ${badge(item.maintenanceType, 'green')}
+            ${statusBadge(item.status)}
+          </div>
+        `;
+
+        list.appendChild(card);
+      });
+    }
+
+    function clearFilters() {
+      document.getElementById('filterBuilding').value = '';
+      document.getElementById('filterFloor').value = '';
+      document.getElementById('filterCategory').value = '';
+      document.getElementById('filterMaintenanceType').value = '';
+      document.getElementById('filterStatus').value = '';
+      document.getElementById('filterKeyword').value = '';
+
+      loadKariokiList();
+    }
+
+    async function openDetail(kariokiId) {
+      try {
+        const result = await apiRequest('getKariokiDetail', { kariokiId });
+
+        state.currentItem = result.data;
+
+        renderDetail();
+        showPage('pageDetail');
+
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    function renderDetail() {
+      const item = state.currentItem;
+      const area = document.getElementById('detailArea');
+
+      if (!item) {
+        area.innerHTML = '';
+        return;
+      }
+
+      area.innerHTML = `
+        ${detailRow('仮置き場ID', item.kariokiId)}
+        ${detailRow('仮置き場名称', item.kariokiName)}
+        ${detailRow('建屋', `${item.buildingName || ''} / ${item.buildingShortName || ''}`)}
+        ${detailRow('フロア', item.floor)}
+        ${detailRow('区分', item.category)}
+        ${detailRow('メンテ区分', item.maintenanceType)}
+        ${detailRow('用途', item.purpose)}
+        ${detailRow('場所', item.locationText)}
+        ${detailRow('広さ', item.areaSize)}
+        ${detailRow('最寄前室', item.nearestRoom)}
+        ${detailRow('使用期限', formatDateForDisplay(item.expireDate))}
+        ${detailRow('ステータス', item.status)}
+        ${detailRow('備考', item.note)}
+        ${detailRow('登録者', item.createdBy)}
+        ${detailRow('登録日時', item.createdAt)}
+        ${detailRow('最終更新者', item.updatedBy)}
+        ${detailRow('最終更新日時', item.updatedAt)}
+      `;
+    }
+
+    function detailRow(label, value) {
+      return `
+        <div class="detail-row">
+          <div class="detail-label">${escapeHtml(label)}</div>
+          <div class="detail-value">${escapeHtml(value || '未入力')}</div>
+        </div>
+      `;
+    }
+
+    function openCreateForm() {
+      state.formMode = 'create';
+      state.lastPageBeforeForm = getActivePageId();
+
+      document.getElementById('formTitle').textContent = '仮置き場登録';
+
+      clearForm();
+
+      showPage('pageForm');
+    }
+
+    function openEditForm() {
+      if (!state.currentItem) {
+        showError('編集対象がありません。');
+        return;
+      }
+
+      state.formMode = 'edit';
+      state.lastPageBeforeForm = 'pageDetail';
+
+      document.getElementById('formTitle').textContent = '仮置き場編集';
+
+      fillForm(state.currentItem);
+
+      showPage('pageForm');
+    }
+
+    function clearForm() {
+      document.getElementById('formKariokiId').value = '';
+      document.getElementById('formBuilding').value = state.buildings[0] ? state.buildings[0].buildingCode : '';
+      document.getElementById('formFloor').value = '';
+      document.getElementById('formKariokiName').value = '';
+      document.getElementById('formCategory').value = '客先';
+      document.getElementById('formMaintenanceType').value = '未設定';
+      document.getElementById('formPurpose').value = '';
+      document.getElementById('formLocationText').value = '';
+      document.getElementById('formAreaSize').value = '';
+      document.getElementById('formNearestRoom').value = '';
+      document.getElementById('formExpireDate').value = '';
+      document.getElementById('formStatus').value = '使用中';
+      document.getElementById('formNote').value = '';
+    }
+
+    function fillForm(item) {
+      document.getElementById('formKariokiId').value = item.kariokiId || '';
+      document.getElementById('formBuilding').value = item.buildingCode || '';
+      document.getElementById('formFloor').value = item.floor || '';
+      document.getElementById('formKariokiName').value = item.kariokiName || '';
+      document.getElementById('formCategory').value = item.category || '客先';
+      document.getElementById('formMaintenanceType').value = item.maintenanceType || '未設定';
+      document.getElementById('formPurpose').value = item.purpose || '';
+      document.getElementById('formLocationText').value = item.locationText || '';
+      document.getElementById('formAreaSize').value = item.areaSize || '';
+      document.getElementById('formNearestRoom').value = item.nearestRoom || '';
+      document.getElementById('formExpireDate').value = formatDateForInput(item.expireDate);
+      document.getElementById('formStatus').value = item.status || '使用中';
+      document.getElementById('formNote').value = item.note || '';
+    }
+
+    async function saveKarioki() {
+      const data = {
+        kariokiId: document.getElementById('formKariokiId').value,
+        buildingCode: document.getElementById('formBuilding').value,
+        floor: document.getElementById('formFloor').value.trim(),
+        kariokiName: document.getElementById('formKariokiName').value.trim(),
+        category: document.getElementById('formCategory').value,
+        maintenanceType: document.getElementById('formMaintenanceType').value,
+        purpose: document.getElementById('formPurpose').value.trim(),
+        locationText: document.getElementById('formLocationText').value.trim(),
+        areaSize: document.getElementById('formAreaSize').value.trim(),
+        nearestRoom: document.getElementById('formNearestRoom').value.trim(),
+        expireDate: document.getElementById('formExpireDate').value,
+        status: document.getElementById('formStatus').value,
+        note: document.getElementById('formNote').value.trim()
+      };
+
+      if (!data.buildingCode) {
+        showError('建屋を選択してください。');
+        return;
+      }
+
+      if (!data.floor) {
+        showError('フロアを入力してください。');
+        return;
+      }
+
+      if (!data.kariokiName) {
+        showError('仮置き場名称を入力してください。');
+        return;
+      }
+
+      try {
+        let result;
+
+        if (state.formMode === 'create') {
+          result = await apiRequest('createKarioki', { data });
+          showSuccess(`登録しました。ID：${result.kariokiId}`);
+          await loadKariokiList();
+          await openDetail(result.kariokiId);
+
+        } else {
+          result = await apiRequest('updateKarioki', { data });
+          showSuccess('更新しました。');
+          state.currentItem = result.data;
+          await loadKariokiList();
+          renderDetail();
+          showPage('pageDetail');
+        }
+
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    function backFromForm() {
+      if (state.formMode === 'edit') {
+        showPage('pageDetail');
+      } else {
+        showPage(state.lastPageBeforeForm || 'pageHome');
+      }
+    }
+
+    async function quickChangeStatus() {
+      if (!state.currentItem) {
+        showError('対象データがありません。');
+        return;
+      }
+
+      const options = state.options.kariokiStatus || ['使用中', '空き', '一時停止', '廃止'];
+      const message = `変更後のステータスを入力してください。\n候補：${options.join(' / ')}`;
+      const status = prompt(message, state.currentItem.status || '使用中');
+
+      if (!status) return;
+
+      if (!options.includes(status)) {
+        showError('存在しないステータスです。');
+        return;
+      }
+
+      try {
+        const result = await apiRequest('changeKariokiStatus', {
+          kariokiId: state.currentItem.kariokiId,
+          status: status
+        });
+
+        state.currentItem = result.data;
+        renderDetail();
+
+        await loadKariokiList();
+
+        showSuccess('ステータスを変更しました。');
+
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    async function deleteCurrentKarioki() {
+      if (!state.currentItem) {
+        showError('対象データがありません。');
+        return;
+      }
+
+      const ok = confirm(
+        `以下の仮置き場を削除扱いにします。\n\n${state.currentItem.kariokiId}\n${state.currentItem.kariokiName}\n\n本当に削除しますか？`
+      );
+
+      if (!ok) return;
+
+      try {
+        await apiRequest('deleteKarioki', {
+          kariokiId: state.currentItem.kariokiId
+        });
+
+        showSuccess('削除扱いにしました。');
+
+        state.currentItem = null;
+
+        await loadKariokiList();
+        showPage('pageSearch');
+
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    async function openLogPage() {
+      showPage('pageLog');
+      await loadOperationLog();
+    }
+
+    async function loadOperationLog() {
+      try {
+        const result = await apiRequest('getOperationLog', { limit: 100 });
+        renderOperationLog(result.data || []);
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    function renderOperationLog(logs) {
+      const list = document.getElementById('logList');
+
+      list.innerHTML = '';
+
+      if (logs.length === 0) {
+        list.innerHTML = '<div class="card">操作履歴はありません。</div>';
+        return;
+      }
+
+      logs.forEach(log => {
+        const card = document.createElement('div');
+        card.className = 'log-card';
+
+        card.innerHTML = `
+          <strong>${escapeHtml(log.action || '')}</strong>
+          <div>${escapeHtml(log.timestamp || '')}</div>
+          <div>操作者：${escapeHtml(log.userName || '')} / ${escapeHtml(log.userId || '')}</div>
+          <div>対象：${escapeHtml(log.targetType || '')} / ${escapeHtml(log.targetId || '')}</div>
+          <div>${escapeHtml(log.detail || '')}</div>
+        `;
+
+        list.appendChild(card);
+      });
+    }
+
+    function getActivePageId() {
+      const active = document.querySelector('.page.active');
+      return active ? active.id : 'pageHome';
+    }
+
+    function badge(text, type) {
+      if (!text) return '';
+      return `<span class="badge ${type || ''}">${escapeHtml(text)}</span>`;
+    }
+
+    function statusBadge(status) {
+      if (!status) return '';
+
+      let type = '';
+
+      if (status === '使用中') type = 'green';
+      if (status === '空き') type = 'blue';
+      if (status === '一時停止') type = 'orange';
+      if (status === '廃止') type = 'red';
+
+      return `<span class="badge ${type}">${escapeHtml(status)}</span>`;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function formatDateForInput(value) {
+      if (!value) return '';
+
+      const text = String(value);
+
+      if (/^\d{4}-\d{2}-\d{2}$/.test(text)) {
+        return text;
+      }
+
+      if (/^\d{4}\/\d{2}\/\d{2}/.test(text)) {
+        return text.slice(0, 10).replaceAll('/', '-');
+      }
+
+      const date = new Date(value);
+
+      if (isNaN(date.getTime())) {
+        return '';
+      }
+
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+
+      return `${y}-${m}-${d}`;
+    }
+
+    function formatDateForDisplay(value) {
+      if (!value) return '';
+
+      const text = String(value);
+
+      if (/^\d{4}-\d{2}-\d{2}$/.test(text)) {
+        return text.replaceAll('-', '/');
+      }
+
+      return text;
+    }
+  </script>
+</body>
+</html>
