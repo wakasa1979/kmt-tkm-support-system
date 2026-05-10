@@ -442,18 +442,25 @@
     }
 
     .shift-day {
-      min-height: 86px;
+      min-height: 88px;
       background: #fff;
       border: 1px solid var(--line);
       border-radius: 10px;
       padding: 6px;
       font-size: 12px;
       overflow: hidden;
+      text-align: left;
     }
 
     .shift-day.empty {
       background: transparent;
       border: none;
+      pointer-events: none;
+    }
+
+    .shift-day.selected {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.16);
     }
 
     .shift-date {
@@ -488,22 +495,68 @@
       color: #92400e;
     }
 
-    .shift-special-list {
-      margin-top: 14px;
-    }
-
-    .shift-special-item {
-      background: #fff;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 10px;
-      margin-bottom: 8px;
-      font-size: 13px;
-    }
-
-    .shift-special-item strong {
+    .shift-count {
       display: block;
-      margin-bottom: 4px;
+      border-radius: 7px;
+      padding: 3px 4px;
+      margin-bottom: 3px;
+      font-size: 10px;
+      font-weight: 800;
+      text-align: center;
+      background: #eef2ff;
+      color: #3730a3;
+    }
+
+    .shift-count.rest {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .shift-detail-card {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fff;
+      padding: 14px;
+      margin-top: 14px;
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+    }
+
+    .shift-detail-title {
+      font-size: 17px;
+      font-weight: 900;
+      margin: 0 0 12px;
+    }
+
+    .shift-detail-section {
+      margin-top: 12px;
+    }
+
+    .shift-detail-section-title {
+      font-size: 13px;
+      font-weight: 900;
+      color: var(--main);
+      border-left: 4px solid var(--main);
+      padding-left: 8px;
+      margin-bottom: 8px;
+    }
+
+    .shift-detail-member {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      border-bottom: 1px solid var(--line);
+      padding: 8px 0;
+      font-size: 14px;
+    }
+
+    .shift-detail-member-name {
+      font-weight: 800;
+    }
+
+    .shift-detail-member-type {
+      color: var(--muted);
+      font-weight: 700;
+      text-align: right;
     }
 
     @media (max-width: 520px) {
@@ -541,14 +594,18 @@
       }
 
       .shift-day {
-        min-height: 78px;
+        min-height: 64px;
         padding: 4px;
         border-radius: 8px;
       }
 
       .shift-worker {
-        font-size: 10px;
-        padding: 2px 4px;
+        display: none;
+      }
+
+      .shift-date {
+        font-size: 11px;
+        margin-bottom: 3px;
       }
 
       .shift-month-nav {
@@ -559,6 +616,10 @@
         width: 33.3%;
         font-size: 12px;
         padding: 10px 6px;
+      }
+
+      .shift-detail-member {
+        font-size: 14px;
       }
     }
   </style>
@@ -582,7 +643,6 @@
 
     <div id="message" class="message"></div>
 
-    <!-- ログイン画面 -->
     <section id="pageLogin" class="page active">
       <div class="card">
         <h2 class="card-title">ログイン</h2>
@@ -597,7 +657,6 @@
       </div>
     </section>
 
-    <!-- ホーム画面 -->
     <section id="pageHome" class="page">
       <div class="card">
         <h2 class="card-title">メニュー</h2>
@@ -641,7 +700,6 @@
       </div>
     </section>
 
-    <!-- 仮置き場検索画面 -->
     <section id="pageSearch" class="page">
       <div class="top-actions">
         <button class="btn small secondary" onclick="showPage('pageHome')">← ホーム</button>
@@ -698,7 +756,6 @@
       </div>
     </section>
 
-    <!-- 詳細画面 -->
     <section id="pageDetail" class="page">
       <div class="top-actions">
         <button class="btn small secondary" onclick="showPage('pageSearch')">← 一覧へ</button>
@@ -714,7 +771,6 @@
       </div>
     </section>
 
-    <!-- 登録・編集画面 -->
     <section id="pageForm" class="page">
       <div class="top-actions">
         <button class="btn small secondary" onclick="backFromForm()">← 戻る</button>
@@ -824,7 +880,6 @@
       </div>
     </section>
 
-    <!-- シフト確認画面 -->
     <section id="pageShift" class="page">
       <div class="top-actions">
         <button class="btn small secondary" onclick="showPage('pageHome')">← ホーム</button>
@@ -848,15 +903,11 @@
         </div>
 
         <div class="shift-calendar" id="shiftCalendar"></div>
-      </div>
 
-      <div class="card">
-        <h2 class="card-title">注意シフト一覧</h2>
-        <div id="shiftSpecialList" class="shift-special-list"></div>
+        <div id="shiftDayDetail"></div>
       </div>
     </section>
 
-    <!-- 操作履歴画面 -->
     <section id="pageLog" class="page">
       <div class="top-actions">
         <button class="btn small secondary" onclick="showPage('pageHome')">← ホーム</button>
@@ -889,7 +940,8 @@
       lastPageBeforeForm: 'pageHome',
       shiftYear: new Date().getFullYear(),
       shiftMonth: new Date().getMonth() + 1,
-      shiftData: null
+      shiftData: null,
+      selectedShiftDate: ''
     };
 
     window.addEventListener('load', async () => {
@@ -909,10 +961,6 @@
     });
 
     async function apiRequest(action, payload = {}) {
-      if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL.includes('ここにGAS')) {
-        throw new Error('GAS_WEB_APP_URL が未設定です。index.html内のURLを設定してください。');
-      }
-
       const sendPayload = { ...payload };
 
       if (state.token && action !== 'login') {
@@ -1546,6 +1594,10 @@
 
         state.shiftData = result;
 
+        if (!state.selectedShiftDate) {
+          state.selectedShiftDate = getDefaultShiftDate(result);
+        }
+
         renderShiftCalendar(result);
 
       } catch (error) {
@@ -1557,7 +1609,6 @@
       const monthTitle = document.getElementById('shiftMonthTitle');
       const availableRange = document.getElementById('shiftAvailableRange');
       const calendar = document.getElementById('shiftCalendar');
-      const specialList = document.getElementById('shiftSpecialList');
 
       monthTitle.textContent = data.monthLabel || `${state.shiftYear}年${state.shiftMonth}月`;
 
@@ -1586,7 +1637,7 @@
         empty.style.gridColumn = '1 / -1';
         empty.textContent = 'この月のシフトデータはありません。';
         calendar.appendChild(empty);
-        specialList.innerHTML = '<div class="shift-special-item">注意シフトはありません。</div>';
+        renderShiftDayDetail(null);
         return;
       }
 
@@ -1599,60 +1650,116 @@
       }
 
       days.forEach(day => {
-        const div = document.createElement('div');
+        const div = document.createElement('button');
         div.className = 'shift-day';
 
+        if (day.date === state.selectedShiftDate) {
+          div.classList.add('selected');
+        }
+
+        div.onclick = () => {
+          state.selectedShiftDate = day.date;
+          renderShiftCalendar(state.shiftData);
+        };
+
         const dateClass = day.weekday === 0 ? 'sunday' : day.weekday === 6 ? 'saturday' : '';
+        const workers = day.workingMembers || [];
+        const rests = day.restMembers || [];
 
         let html = `<div class="shift-date ${dateClass}">${day.day}</div>`;
 
-        const workers = day.workingMembers || [];
-
-        if (workers.length === 0) {
-          html += `<span class="shift-worker">出勤なし</span>`;
+        if (isMobileView()) {
+          html += `<span class="shift-count">出勤${workers.length}</span>`;
+          html += `<span class="shift-count rest">休み${rests.length}</span>`;
         } else {
-          workers.forEach(worker => {
-            const specialClass = worker.isSpecial === 'TRUE' ? 'special' : '';
-            const name = worker.displayName || worker.memberName || '';
-            const label = worker.isSpecial === 'TRUE'
-              ? `${name} ${worker.shiftType || worker.shiftValue || ''}`
-              : name;
+          if (workers.length === 0) {
+            html += `<span class="shift-worker">出勤なし</span>`;
+          } else {
+            workers.forEach(worker => {
+              const specialClass = worker.isSpecial === 'TRUE' ? 'special' : '';
+              const name = worker.displayName || worker.memberName || '';
+              const label = worker.isSpecial === 'TRUE'
+                ? `${name} ${worker.shiftType || worker.shiftValue || ''}`
+                : name;
 
-            html += `<span class="shift-worker ${specialClass}">${escapeHtml(label)}</span>`;
-          });
+              html += `<span class="shift-worker ${specialClass}">${escapeHtml(label)}</span>`;
+            });
+          }
         }
 
         div.innerHTML = html;
         calendar.appendChild(div);
       });
 
-      renderShiftSpecialList(data.specialList || []);
+      const selectedDay = days.find(day => day.date === state.selectedShiftDate) || days[0];
+      state.selectedShiftDate = selectedDay.date;
+      renderShiftDayDetail(selectedDay);
     }
 
-    function renderShiftSpecialList(list) {
-      const specialList = document.getElementById('shiftSpecialList');
+    function renderShiftDayDetail(day) {
+      const area = document.getElementById('shiftDayDetail');
 
-      specialList.innerHTML = '';
+      if (!area) return;
 
-      if (!list || list.length === 0) {
-        specialList.innerHTML = '<div class="shift-special-item">注意シフトはありません。</div>';
+      if (!day) {
+        area.innerHTML = `
+          <div class="shift-detail-card">
+            <p class="shift-detail-title">シフト詳細</p>
+            <div class="shift-detail-section">表示できるシフトデータがありません。</div>
+          </div>
+        `;
         return;
       }
 
-      list.forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'shift-special-item';
+      const workers = day.workingMembers || [];
+      const rests = day.restMembers || [];
 
+      area.innerHTML = `
+        <div class="shift-detail-card">
+          <p class="shift-detail-title">${escapeHtml(formatDateForDisplay(day.date))} のシフト詳細</p>
+
+          <div class="shift-detail-section">
+            <div class="shift-detail-section-title">出勤者</div>
+            ${renderShiftMemberRows(workers, '出勤者はいません。')}
+          </div>
+
+          <div class="shift-detail-section">
+            <div class="shift-detail-section-title">休み</div>
+            ${renderShiftMemberRows(rests, '休みのメンバーはいません。')}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderShiftMemberRows(list, emptyText) {
+      if (!list || list.length === 0) {
+        return `<div class="shift-detail-member"><span class="shift-detail-member-name">${escapeHtml(emptyText)}</span></div>`;
+      }
+
+      return list.map(item => {
         const name = item.displayName || item.memberName || '';
-        const shiftLabel = item.shiftType || item.shiftValue || '';
+        const label = item.shiftValue || item.shiftType || '';
 
-        div.innerHTML = `
-          <strong>${escapeHtml(formatDateForDisplay(item.date))}　${escapeHtml(name)}　${escapeHtml(shiftLabel)}</strong>
-          <div>元データ：${escapeHtml(item.shiftValue || '')}</div>
+        return `
+          <div class="shift-detail-member">
+            <span class="shift-detail-member-name">${escapeHtml(name)}</span>
+            <span class="shift-detail-member-type">${escapeHtml(label || '出勤')}</span>
+          </div>
         `;
+      }).join('');
+    }
 
-        specialList.appendChild(div);
-      });
+    function getDefaultShiftDate(data) {
+      const days = data.days || [];
+      const todayText = getTodayText();
+
+      const todayInMonth = days.find(day => day.date === todayText);
+
+      if (todayInMonth) {
+        return todayInMonth.date;
+      }
+
+      return days[0] ? days[0].date : '';
     }
 
     function moveShiftMonth(offset) {
@@ -1666,7 +1773,21 @@
         state.shiftMonth = date.getMonth() + 1;
       }
 
+      state.selectedShiftDate = '';
       loadShiftCalendar();
+    }
+
+    function isMobileView() {
+      return window.innerWidth <= 520;
+    }
+
+    function getTodayText() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+
+      return `${y}-${m}-${d}`;
     }
 
     function getActivePageId() {
@@ -1760,10 +1881,6 @@
       }
 
       return '';
-    }
-
-    function isValidExtension(value) {
-      return true;
     }
   </script>
 </body>
