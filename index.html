@@ -797,8 +797,8 @@
 
         <div class="section-title">申請・管理情報</div>
 
-        <label class="label" for="formApplicantDeptPhone">申請課電話番号（内線5桁）</label>
-        <input id="formApplicantDeptPhone" class="input" type="text" inputmode="numeric" maxlength="5" placeholder="例：12345" />
+        <label class="label" for="formApplicantDeptPhone">申請課電話番号</label>
+        <input id="formApplicantDeptPhone" class="input" type="text" inputmode="tel" placeholder="例：1234 / 12345 / 090-xxxx-xxxx" />
 
         <label class="label" for="formManagerDept">管理者所属</label>
         <input id="formManagerDept" class="input" type="text" placeholder="例：TKMサポート" />
@@ -806,14 +806,14 @@
         <label class="label" for="formManagerName">管理責任者名</label>
         <input id="formManagerName" class="input" type="text" placeholder="例：若佐" />
 
-        <label class="label" for="formManagerPhone">管理責任者番号（内線5桁）</label>
-        <input id="formManagerPhone" class="input" type="text" inputmode="numeric" maxlength="5" placeholder="例：12345" />
+        <label class="label" for="formManagerPhone">管理責任者番号</label>
+        <input id="formManagerPhone" class="input" type="text" inputmode="tel" placeholder="例：1234 / 12345 / 090-xxxx-xxxx" />
 
         <label class="label" for="formUserName">使用者名</label>
         <input id="formUserName" class="input" type="text" placeholder="例：使用者名" />
 
-        <label class="label" for="formUserPhone">使用者番号（内線5桁）</label>
-        <input id="formUserPhone" class="input" type="text" inputmode="numeric" maxlength="5" placeholder="例：12345" />
+        <label class="label" for="formUserPhone">使用者番号</label>
+        <input id="formUserPhone" class="input" type="text" inputmode="tel" placeholder="例：1234 / 12345 / 090-xxxx-xxxx" />
 
         <div class="section-title">備考</div>
 
@@ -1392,21 +1392,6 @@
         return;
       }
 
-      if (!isValidExtension(data.applicantDeptPhone)) {
-        showError('申請課電話番号は内線5桁で入力してください。');
-        return;
-      }
-
-      if (!isValidExtension(data.managerPhone)) {
-        showError('管理責任者番号は内線5桁で入力してください。');
-        return;
-      }
-
-      if (!isValidExtension(data.userPhone)) {
-        showError('使用者番号は内線5桁で入力してください。');
-        return;
-      }
-
       if (data.kariokiStartDate && data.kariokiEndDate && data.kariokiStartDate > data.kariokiEndDate) {
         showError('仮置き期間の終了日は開始日以降にしてください。');
         return;
@@ -1778,13 +1763,7 @@
     }
 
     function isValidExtension(value) {
-      const text = String(value || '').trim();
-
-      if (!text) {
-        return true;
-      }
-
-      return /^\d{5}$/.test(text);
+      return true;
     }
   </script>
 </body>
