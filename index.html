@@ -1899,12 +1899,14 @@
     }
 
     async function openMaintenancePage() {
-      showPage('pageMaintenance');
+  showPage('pageMaintenance');
 
-      if (state.maintenanceList.length === 0) {
-        await searchMaintenanceList(1);
-      }
-    }
+  // 初回表示時は全件検索しない
+  // すでに検索済みの結果がある場合だけ、そのまま表示する
+  if (state.maintenanceList.length === 0 && state.maintenanceTotalCount === 0) {
+    renderMaintenanceInitialMessage();
+  }
+}
 
     function getMaintenanceFilters() {
       return {
