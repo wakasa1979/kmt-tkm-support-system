@@ -237,7 +237,8 @@
       gap: 10px;
     }
 
-    .form-grid .full {
+    .form-grid .full,
+    .filter-grid .full {
       grid-column: 1 / -1;
     }
 
@@ -390,6 +391,70 @@
     .log-card strong {
       display: block;
       margin-bottom: 4px;
+    }
+
+    .maintenance-card {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fff;
+      padding: 14px;
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+      text-align: left;
+      width: 100%;
+    }
+
+    .maintenance-title {
+      font-size: 16px;
+      font-weight: 900;
+      margin-bottom: 8px;
+      word-break: break-word;
+    }
+
+    .maintenance-main {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    .maintenance-line {
+      display: flex;
+      gap: 6px;
+      line-height: 1.5;
+    }
+
+    .maintenance-line-label {
+      color: var(--muted);
+      min-width: 72px;
+      font-weight: 700;
+    }
+
+    .maintenance-line-value {
+      font-weight: 800;
+      word-break: break-word;
+    }
+
+    .maintenance-pager {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .maintenance-pager-info {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 700;
+      text-align: center;
+      flex: 1;
+    }
+
+    .maintenance-pager .btn {
+      margin-top: 0;
+      width: auto;
+      min-width: 92px;
     }
 
     .shift-header-box {
@@ -764,6 +829,14 @@
         width: 100%;
       }
 
+      .maintenance-pager {
+        flex-direction: column;
+      }
+
+      .maintenance-pager .btn {
+        width: 100%;
+      }
+
       .shift-calendar {
         gap: 3px;
       }
@@ -875,6 +948,11 @@
             <span>TKMサポートメンバーのシフトをカレンダー形式で確認します。</span>
           </button>
 
+          <button class="menu-button" onclick="openMaintenancePage()">
+            <strong>次回メンテ検索</strong>
+            <span>装置ID・日付・建屋・機種・メンテ内容で次回メンテ予定を検索します。</span>
+          </button>
+
           <button class="menu-button" onclick="openLogPage()">
             <strong>操作履歴</strong>
             <span>登録・更新・削除などの操作履歴を確認します。</span>
@@ -951,6 +1029,74 @@
       <div class="card">
         <h2 class="card-title">検索結果 <span id="listCount"></span></h2>
         <div id="kariokiList" class="list"></div>
+      </div>
+    </section>
+
+    <section id="pageMaintenance" class="page">
+      <div class="top-actions">
+        <button class="btn small secondary" onclick="showPage('pageHome')">← ホーム</button>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">次回メンテ検索</h2>
+
+        <div class="filter-grid">
+          <div class="full">
+            <label class="label" for="maintenanceEquipmentKeyword">装置ID検索</label>
+            <input id="maintenanceEquipmentKeyword" class="input" type="text" placeholder="例：RAGTG-01 / RAGTG01-A / G01" />
+          </div>
+
+          <div>
+            <label class="label" for="maintenanceDateFrom">メンテ予定日 開始</label>
+            <input id="maintenanceDateFrom" class="input" type="date" />
+          </div>
+
+          <div>
+            <label class="label" for="maintenanceDateTo">メンテ予定日 終了</label>
+            <input id="maintenanceDateTo" class="input" type="date" />
+          </div>
+
+          <div>
+            <label class="label" for="maintenanceBuilding">建屋</label>
+            <input id="maintenanceBuilding" class="input" type="text" placeholder="例：Y5 / Y6" />
+          </div>
+
+          <div>
+            <label class="label" for="maintenanceMachineType">機種</label>
+            <select id="maintenanceMachineType" class="select">
+              <option value="">すべて</option>
+              <option value="Sym3">Sym3</option>
+              <option value="Mesa">Mesa</option>
+            </select>
+          </div>
+
+          <div class="full">
+            <label class="label" for="maintenanceTextKeyword">メンテ内容</label>
+            <input id="maintenanceTextKeyword" class="input" type="text" placeholder="例：RF / Wet / PM など" />
+          </div>
+        </div>
+
+        <button class="btn blue" onclick="searchMaintenanceList(1)">検索</button>
+        <button class="btn secondary" onclick="clearMaintenanceFilters()">条件クリア</button>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">検索結果 <span id="maintenanceResultCount"></span></h2>
+
+        <div id="maintenancePagerTop" class="maintenance-pager"></div>
+        <div id="maintenanceList" class="list"></div>
+        <div id="maintenancePagerBottom" class="maintenance-pager"></div>
+      </div>
+    </section>
+
+    <section id="pageMaintenanceDetail" class="page">
+      <div class="top-actions">
+        <button class="btn small secondary" onclick="showPage('pageMaintenance')">← 検索結果へ</button>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">次回メンテ詳細</h2>
+        <div id="maintenanceDetailArea"></div>
       </div>
     </section>
 
@@ -1147,7 +1293,13 @@
       shiftMonth: new Date().getMonth() + 1,
       shiftData: null,
       selectedShiftDate: '',
-      shiftViewMode: 'month'
+      shiftViewMode: 'month',
+      maintenanceList: [],
+      maintenanceCurrentPage: 1,
+      maintenanceTotalPages: 1,
+      maintenanceTotalCount: 0,
+      maintenancePageSize: 50,
+      maintenanceCurrentItem: null
     };
 
     window.addEventListener('load', async () => {
@@ -1744,6 +1896,185 @@
       } catch (error) {
         showError(error.message);
       }
+    }
+
+    async function openMaintenancePage() {
+      showPage('pageMaintenance');
+
+      if (state.maintenanceList.length === 0) {
+        await searchMaintenanceList(1);
+      }
+    }
+
+    function getMaintenanceFilters() {
+      return {
+        equipmentKeyword: document.getElementById('maintenanceEquipmentKeyword').value.trim(),
+        dateFrom: document.getElementById('maintenanceDateFrom').value,
+        dateTo: document.getElementById('maintenanceDateTo').value,
+        building: document.getElementById('maintenanceBuilding').value.trim(),
+        machineType: document.getElementById('maintenanceMachineType').value,
+        maintenanceTextKeyword: document.getElementById('maintenanceTextKeyword').value.trim()
+      };
+    }
+
+    async function searchMaintenanceList(page) {
+      try {
+        const filters = getMaintenanceFilters();
+
+        if (filters.dateFrom && filters.dateTo && filters.dateFrom > filters.dateTo) {
+          showError('終了日は開始日以降にしてください。');
+          return;
+        }
+
+        const result = await apiRequest('searchMaintenanceList', {
+          filters: filters,
+          page: page || 1,
+          pageSize: state.maintenancePageSize
+        });
+
+        state.maintenanceList = result.data || [];
+        state.maintenanceCurrentPage = result.page || 1;
+        state.maintenanceTotalPages = result.totalPages || 1;
+        state.maintenanceTotalCount = result.totalCount || 0;
+
+        renderMaintenanceList();
+
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    function renderMaintenanceList() {
+      const list = document.getElementById('maintenanceList');
+      const count = document.getElementById('maintenanceResultCount');
+
+      count.textContent = `（${state.maintenanceTotalCount}件）`;
+      list.innerHTML = '';
+
+      if (state.maintenanceList.length === 0) {
+        list.innerHTML = '<div class="maintenance-card"><div class="list-card-meta">該当するメンテ予定はありません。</div></div>';
+        renderMaintenancePager();
+        return;
+      }
+
+      state.maintenanceList.forEach(item => {
+        const card = document.createElement('button');
+        card.className = 'maintenance-card';
+        card.onclick = () => openMaintenanceDetail(item.maintenanceId);
+
+        card.innerHTML = `
+          <div class="maintenance-title">${escapeHtml(item.equipmentIdCh || '')}</div>
+
+          <div class="maintenance-main">
+            <div class="maintenance-line">
+              <span class="maintenance-line-label">Type</span>
+              <span class="maintenance-line-value">${escapeHtml(item.type || '')}</span>
+            </div>
+
+            <div class="maintenance-line">
+              <span class="maintenance-line-label">App</span>
+              <span class="maintenance-line-value">${escapeHtml(item.app || '')}</span>
+            </div>
+
+            <div class="maintenance-line">
+              <span class="maintenance-line-label">予定日</span>
+              <span class="maintenance-line-value">${escapeHtml(item.nextMaintenanceDateText || '')}</span>
+            </div>
+
+            <div class="maintenance-line">
+              <span class="maintenance-line-label">内容</span>
+              <span class="maintenance-line-value">${escapeHtml(item.nextMaintenanceText || '')}</span>
+            </div>
+          </div>
+
+          <div class="badge-row">
+            ${badge(item.building, 'blue')}
+            ${badge(item.machineType, 'green')}
+            ${badge(item.pmNo, 'purple')}
+          </div>
+        `;
+
+        list.appendChild(card);
+      });
+
+      renderMaintenancePager();
+    }
+
+    function renderMaintenancePager() {
+      const top = document.getElementById('maintenancePagerTop');
+      const bottom = document.getElementById('maintenancePagerBottom');
+
+      const html = `
+        <button class="btn small secondary" onclick="moveMaintenancePage(-1)" ${state.maintenanceCurrentPage <= 1 ? 'disabled' : ''}>前へ</button>
+        <div class="maintenance-pager-info">
+          ${state.maintenanceCurrentPage} / ${state.maintenanceTotalPages} ページ
+        </div>
+        <button class="btn small secondary" onclick="moveMaintenancePage(1)" ${state.maintenanceCurrentPage >= state.maintenanceTotalPages ? 'disabled' : ''}>次へ</button>
+      `;
+
+      top.innerHTML = html;
+      bottom.innerHTML = html;
+    }
+
+    function moveMaintenancePage(offset) {
+      const nextPage = state.maintenanceCurrentPage + offset;
+
+      if (nextPage < 1 || nextPage > state.maintenanceTotalPages) {
+        return;
+      }
+
+      searchMaintenanceList(nextPage);
+    }
+
+    function clearMaintenanceFilters() {
+      document.getElementById('maintenanceEquipmentKeyword').value = '';
+      document.getElementById('maintenanceDateFrom').value = '';
+      document.getElementById('maintenanceDateTo').value = '';
+      document.getElementById('maintenanceBuilding').value = '';
+      document.getElementById('maintenanceMachineType').value = '';
+      document.getElementById('maintenanceTextKeyword').value = '';
+
+      searchMaintenanceList(1);
+    }
+
+    async function openMaintenanceDetail(maintenanceId) {
+      try {
+        const result = await apiRequest('getMaintenanceDetail', { maintenanceId: maintenanceId });
+
+        state.maintenanceCurrentItem = result.data;
+
+        renderMaintenanceDetail();
+        showPage('pageMaintenanceDetail');
+
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    function renderMaintenanceDetail() {
+      const item = state.maintenanceCurrentItem;
+      const area = document.getElementById('maintenanceDetailArea');
+
+      if (!item) {
+        area.innerHTML = '';
+        return;
+      }
+
+      area.innerHTML = `
+        ${detailRow('建屋', item.building)}
+        ${detailRow('機種', item.machineType)}
+        ${detailRow('装置ID / Ch', item.equipmentIdCh)}
+        ${detailRow('Type', item.type)}
+        ${detailRow('App', item.app)}
+        ${detailRow('PM#', item.pmNo)}
+        ${detailRow('次回メンテ予定日', item.nextMaintenanceDateText)}
+        ${detailRow('次回メンテ内容', item.nextMaintenanceText)}
+        ${detailRow('備考・特記', item.note)}
+        ${detailRow('用途', item.purpose)}
+        ${detailRow('契約期間関連', item.contractPeriod)}
+        ${detailRow('元ファイル', item.sourceFileName)}
+        ${detailRow('取込日時', item.importedAt)}
+      `;
     }
 
     async function openLogPage() {
