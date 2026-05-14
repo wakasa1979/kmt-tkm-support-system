@@ -7,14 +7,14 @@
   <title>KMT inc. TKM Support業務用システム</title>
 
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
-　<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-　<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
-　<link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+  <link rel="manifest" href="manifest.webmanifest">
 
-　<meta name="theme-color" content="#111827">
-　<meta name="apple-mobile-web-app-capable" content="yes">
-　<meta name="apple-mobile-web-app-title" content="TKM Support">
-　<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#111827">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="TKM Support">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
   <style>
     :root {
@@ -418,7 +418,8 @@
     }
 
     .maintenance-card,
-    .frat-card {
+    .frat-card,
+    .kit-card {
       border: 1px solid var(--line);
       border-radius: 16px;
       background: #fff;
@@ -429,7 +430,8 @@
     }
 
     .maintenance-title,
-    .frat-title {
+    .frat-title,
+    .kit-title {
       font-size: 16px;
       font-weight: 900;
       margin-bottom: 8px;
@@ -437,7 +439,8 @@
     }
 
     .maintenance-main,
-    .frat-main {
+    .frat-main,
+    .kit-main {
       display: grid;
       grid-template-columns: 1fr;
       gap: 6px;
@@ -446,21 +449,24 @@
     }
 
     .maintenance-line,
-    .frat-line {
+    .frat-line,
+    .kit-line {
       display: flex;
       gap: 6px;
       line-height: 1.5;
     }
 
     .maintenance-line-label,
-    .frat-line-label {
+    .frat-line-label,
+    .kit-line-label {
       color: var(--muted);
       min-width: 84px;
       font-weight: 700;
     }
 
     .maintenance-line-value,
-    .frat-line-value {
+    .frat-line-value,
+    .kit-line-value {
       font-weight: 800;
       word-break: break-word;
     }
@@ -487,7 +493,8 @@
       min-width: 92px;
     }
 
-    .frat-group-title {
+    .frat-group-title,
+    .kit-group-title {
       font-size: 15px;
       font-weight: 900;
       margin: 18px 0 8px;
@@ -1029,6 +1036,11 @@
             <span>FRAT貼付、保留、対象外、出荷完了を管理します。</span>
           </button>
 
+          <button class="menu-button" onclick="openKitPage()">
+            <strong>KIT現在地管理</strong>
+            <span>MESA KITの現在地・取付中・構内在庫・出荷待ちを確認します。</span>
+          </button>
+
           <button class="menu-button" onclick="openLogPage()">
             <strong>操作履歴</strong>
             <span>登録・更新・削除などの操作履歴を確認します。</span>
@@ -1036,11 +1048,6 @@
 
           <button class="menu-button disabled" onclick="showInfo('在庫管理は次回以降に追加予定です。')">
             <strong>在庫管理</strong>
-            <span>準備中</span>
-          </button>
-
-          <button class="menu-button disabled" onclick="showInfo('KIT管理は次回以降に追加予定です。')">
-            <strong>KIT管理</strong>
             <span>準備中</span>
           </button>
         </div>
@@ -1396,6 +1403,84 @@
       </div>
     </section>
 
+    <section id="pageKit" class="page">
+      <div class="top-actions">
+        <button class="btn small secondary" onclick="showPage('pageHome')">← ホーム</button>
+        <button class="btn small blue" onclick="loadKitList()">更新</button>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">KIT現在地管理</h2>
+
+        <div class="filter-grid">
+          <div>
+            <label class="label" for="kitFilterMachineType">機種</label>
+            <select id="kitFilterMachineType" class="select"></select>
+          </div>
+
+          <div>
+            <label class="label" for="kitFilterStatus">現在状態</label>
+            <select id="kitFilterStatus" class="select"></select>
+          </div>
+
+          <div>
+            <label class="label" for="kitFilterBuilding">現在建屋</label>
+            <select id="kitFilterBuilding" class="select"></select>
+          </div>
+
+          <div>
+            <label class="label" for="kitFilterKitType">キット種別</label>
+            <select id="kitFilterKitType" class="select"></select>
+          </div>
+
+          <div>
+            <label class="label" for="kitFilterAssignmentStatus">割当状態</label>
+            <select id="kitFilterAssignmentStatus" class="select"></select>
+          </div>
+
+          <div>
+            <label class="label" for="kitFilterFratStatus">FRAT状態</label>
+            <select id="kitFilterFratStatus" class="select"></select>
+          </div>
+
+          <div>
+            <label class="label" for="kitFilterShippingStatus">出荷状態</label>
+            <select id="kitFilterShippingStatus" class="select"></select>
+          </div>
+
+          <div class="full">
+            <label class="label" for="kitFilterKeyword">キーワード</label>
+            <input id="kitFilterKeyword" class="input" type="text" placeholder="KIT No. / 装置ID / 仮置き場名など" />
+          </div>
+        </div>
+
+        <button class="btn blue" onclick="loadKitList()">検索</button>
+        <button class="btn secondary" onclick="clearKitFilters()">条件クリア</button>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">KIT一覧 <span id="kitListCount"></span></h2>
+        <div id="kitList" class="list"></div>
+      </div>
+    </section>
+
+    <section id="pageKitDetail" class="page">
+      <div class="top-actions">
+        <button class="btn small secondary" onclick="showPage('pageKit')">← KIT一覧へ</button>
+        <button class="btn small blue" onclick="refreshCurrentKitDetail()">更新</button>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">KIT詳細</h2>
+        <div id="kitDetailArea"></div>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">KIT履歴</h2>
+        <div id="kitEventList" class="list"></div>
+      </div>
+    </section>
+
     <section id="pageDetail" class="page">
       <div class="top-actions">
         <button class="btn small secondary" onclick="showPage('pageSearch')">← 一覧へ</button>
@@ -1581,30 +1666,49 @@
       user: JSON.parse(localStorage.getItem('kmt_user') || 'null'),
       buildings: [],
       options: {},
+
       fratOptions: {
         fratStatus: ['未貼付', '貼付済', '対象外', '保留'],
         shippingStatus: ['未出荷', '出荷済', '保留中'],
         machineType: ['MESA', 'SYM3'],
         building: ['未判定', 'Y2', 'Y3', 'Y4', 'Y5', 'Y6', 'Y7']
       },
+
+      kitOptions: {
+        machineType: ['MESA'],
+        currentStatus: ['取付中', '構内在庫', '出荷待ち', '構外'],
+        currentBuilding: ['未判定', 'Y2', 'Y3', 'Y4', 'Y5', 'Y6', 'Y7'],
+        kitType: ['Full-S', 'Full-Li'],
+        assignmentStatus: ['未割当', '割当済'],
+        fratStatus: ['未貼付', '貼付済', '対象外', '保留'],
+        shippingStatus: ['未出荷', '出荷済', '保留中']
+      },
+
       currentList: [],
       currentItem: null,
       formMode: 'create',
       lastPageBeforeForm: 'pageHome',
+
       shiftYear: new Date().getFullYear(),
       shiftMonth: new Date().getMonth() + 1,
       shiftData: null,
       selectedShiftDate: '',
       shiftViewMode: 'month',
+
       maintenanceList: [],
       maintenanceCurrentPage: 1,
       maintenanceTotalPages: 1,
       maintenanceTotalCount: 0,
       maintenancePageSize: 50,
       maintenanceCurrentItem: null,
+
       fratTargets: [],
       currentFratTarget: null,
-      fratHistory: []
+      fratHistory: [],
+
+      kitList: [],
+      currentKit: null,
+      kitEvents: []
     };
 
     window.addEventListener('load', async () => {
@@ -1780,9 +1884,11 @@
       state.buildings = result.buildings || [];
       state.options = result.options || {};
       state.fratOptions = result.fratOptions || state.fratOptions;
+      state.kitOptions = result.kitOptions || state.kitOptions;
 
       renderSelectOptions();
       renderFratSelectOptions();
+      renderKitSelectOptions();
     }
 
     function renderSelectOptions() {
@@ -1814,6 +1920,16 @@
 
       renderStaticSelect('fratHistoryMachineType', state.fratOptions.machineType, true);
       renderStaticSelect('fratHistoryBuilding', state.fratOptions.building, true);
+    }
+
+    function renderKitSelectOptions() {
+      renderStaticSelect('kitFilterMachineType', state.kitOptions.machineType, true);
+      renderStaticSelect('kitFilterStatus', state.kitOptions.currentStatus, true);
+      renderStaticSelect('kitFilterBuilding', state.kitOptions.currentBuilding, true);
+      renderStaticSelect('kitFilterKitType', state.kitOptions.kitType, true);
+      renderStaticSelect('kitFilterAssignmentStatus', state.kitOptions.assignmentStatus, true);
+      renderStaticSelect('kitFilterFratStatus', state.kitOptions.fratStatus, true);
+      renderStaticSelect('kitFilterShippingStatus', state.kitOptions.shippingStatus, true);
     }
 
     function renderBuildingSelect(elementId, includeAll) {
@@ -2530,7 +2646,8 @@
         grouped[building].forEach(item => {
           const card = document.createElement('div');
           card.className = 'frat-card';
-                    const canShip = item.fratStatus === '貼付済';
+
+          const canShip = item.fratStatus === '貼付済';
 
           card.innerHTML = `
             <div class="frat-title">${escapeHtml(item.removedSerial || '')}</div>
@@ -2658,7 +2775,7 @@
       }
     }
 
-        async function quickUpdateShippingStatus(targetId, shippingStatus) {
+    async function quickUpdateShippingStatus(targetId, shippingStatus) {
       if (shippingStatus === '出荷済') {
         const target = state.fratTargets.find(item => String(item.targetId) === String(targetId));
 
@@ -2709,7 +2826,7 @@
         return;
       }
 
-            const shippingStatus = document.getElementById('fratDetailShippingStatus').value;
+      const shippingStatus = document.getElementById('fratDetailShippingStatus').value;
 
       if (shippingStatus === '出荷済') {
         if (state.currentFratTarget.fratStatus !== '貼付済') {
@@ -2937,6 +3054,309 @@
 
         list.appendChild(card);
       });
+    }
+
+    async function openKitPage() {
+      showPage('pageKit');
+
+      if (state.kitList.length === 0) {
+        await loadKitList();
+      }
+    }
+
+    function getKitFilters() {
+      return {
+        machineType: document.getElementById('kitFilterMachineType').value,
+        currentStatus: document.getElementById('kitFilterStatus').value,
+        currentBuilding: document.getElementById('kitFilterBuilding').value,
+        kitType: document.getElementById('kitFilterKitType').value,
+        assignmentStatus: document.getElementById('kitFilterAssignmentStatus').value,
+        fratStatus: document.getElementById('kitFilterFratStatus').value,
+        shippingStatus: document.getElementById('kitFilterShippingStatus').value,
+        keyword: document.getElementById('kitFilterKeyword').value.trim()
+      };
+    }
+
+    async function loadKitList() {
+      try {
+        const filters = getKitFilters();
+
+        const result = await apiRequest('getKitList', { filters });
+
+        state.kitList = result.data || [];
+
+        renderKitList();
+
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    function renderKitList() {
+      const list = document.getElementById('kitList');
+      const count = document.getElementById('kitListCount');
+
+      count.textContent = `（${state.kitList.length}件）`;
+      list.innerHTML = '';
+
+      if (state.kitList.length === 0) {
+        list.innerHTML = '<div class="kit-card"><div class="list-card-meta">該当するKITはありません。</div></div>';
+        return;
+      }
+
+      const grouped = {};
+
+      state.kitList.forEach(item => {
+        const key = item.currentStatus || '未設定';
+
+        if (!grouped[key]) {
+          grouped[key] = [];
+        }
+
+        grouped[key].push(item);
+      });
+
+      Object.keys(grouped).forEach(status => {
+        const title = document.createElement('div');
+        title.className = 'kit-group-title';
+        title.textContent = `${status}（${grouped[status].length}件）`;
+        list.appendChild(title);
+
+        grouped[status].forEach(item => {
+          const card = document.createElement('button');
+          card.className = 'kit-card';
+          card.style.textAlign = 'left';
+          card.onclick = () => openKitDetail(item.kitId);
+
+          const currentPlace = makeKitCurrentPlaceText(item);
+          const assignedPlace = makeKitAssignedPlaceText(item);
+
+          card.innerHTML = `
+            <div class="kit-title">${escapeHtml(item.kitSerial || '')}</div>
+
+            <div class="kit-main">
+              <div class="kit-line">
+                <span class="kit-line-label">種別</span>
+                <span class="kit-line-value">${escapeHtml(item.kitType || '')}</span>
+              </div>
+
+              <div class="kit-line">
+                <span class="kit-line-label">現在地</span>
+                <span class="kit-line-value">${escapeHtml(currentPlace)}</span>
+              </div>
+
+              <div class="kit-line">
+                <span class="kit-line-label">割当先</span>
+                <span class="kit-line-value">${escapeHtml(assignedPlace)}</span>
+              </div>
+
+              <div class="kit-line">
+                <span class="kit-line-label">最終更新</span>
+                <span class="kit-line-value">${escapeHtml(item.lastActionAt || '')}</span>
+              </div>
+            </div>
+
+            <div class="badge-row">
+              ${kitStatusBadge(item.currentStatus)}
+              ${kitTypeBadge(item.kitType)}
+              ${badge(item.currentBuilding || '未判定', 'blue')}
+              ${assignmentStatusBadge(item.assignmentStatus)}
+              ${item.fratStatus ? fratStatusBadge(item.fratStatus) : ''}
+              ${item.shippingStatus ? shippingStatusBadge(item.shippingStatus) : ''}
+            </div>
+          `;
+
+          list.appendChild(card);
+        });
+      });
+    }
+
+    async function openKitDetail(kitId) {
+      try {
+        const detailResult = await apiRequest('getKitDetail', { kitId });
+
+        state.currentKit = detailResult.data;
+
+        renderKitDetail();
+
+        await loadKitEventLog(kitId);
+
+        showPage('pageKitDetail');
+
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    async function refreshCurrentKitDetail() {
+      if (!state.currentKit || !state.currentKit.kitId) {
+        showError('更新対象のKITがありません。');
+        return;
+      }
+
+      await openKitDetail(state.currentKit.kitId);
+    }
+
+    function renderKitDetail() {
+      const item = state.currentKit;
+      const area = document.getElementById('kitDetailArea');
+
+      if (!item) {
+        area.innerHTML = '';
+        return;
+      }
+
+      area.innerHTML = `
+        ${detailRow('KIT No.', item.kitSerial)}
+        ${detailRow('機種', item.machineType)}
+        ${detailRow('キット種別', item.kitType)}
+        ${detailRow('現在状態', item.currentStatus)}
+        ${detailRow('現在建屋', item.currentBuilding)}
+        ${detailRow('現在仮置きID', item.currentKariokiId)}
+        ${detailRow('現在仮置き名', item.currentKariokiName)}
+        ${detailRow('現在場所', item.currentLocationText)}
+        ${detailRow('現在装置ID-Ch', item.currentEquipmentCh)}
+        ${detailRow('現在装置ID', item.currentEquipmentId)}
+        ${detailRow('現在Chamber', item.currentChamber)}
+        ${detailRow('現在装置対応種別', item.currentCompatibleKitType)}
+
+        ${detailRow('割当状態', item.assignmentStatus)}
+        ${detailRow('割当建屋', item.assignedBuilding)}
+        ${detailRow('割当装置ID-Ch', item.assignedEquipmentCh)}
+        ${detailRow('割当装置ID', item.assignedEquipmentId)}
+        ${detailRow('割当Chamber', item.assignedChamber)}
+        ${detailRow('割当装置対応種別', item.assignedCompatibleKitType)}
+        ${detailRow('割当予定日', item.assignedWorkDateText)}
+
+        ${detailRow('FRAT状態', item.fratStatus)}
+        ${detailRow('出荷状態', item.shippingStatus)}
+
+        ${detailRow('取付日', item.installedDateText)}
+        ${detailRow('納品日', item.deliveredDateText)}
+        ${detailRow('作成日時', item.createdAt)}
+        ${detailRow('作成者', item.createdBy)}
+        ${detailRow('最終更新日時', item.lastActionAt)}
+        ${detailRow('最終更新者', item.lastActionBy)}
+        ${detailRow('備考', item.note)}
+      `;
+    }
+
+    async function loadKitEventLog(kitId) {
+      try {
+        const result = await apiRequest('getKitEventLog', {
+          kitId: kitId,
+          limit: 100
+        });
+
+        state.kitEvents = result.data || [];
+
+        renderKitEventLog();
+
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    function renderKitEventLog() {
+      const list = document.getElementById('kitEventList');
+
+      list.innerHTML = '';
+
+      if (!state.kitEvents || state.kitEvents.length === 0) {
+        list.innerHTML = '<div class="kit-card"><div class="list-card-meta">履歴はありません。</div></div>';
+        return;
+      }
+
+      state.kitEvents.forEach(event => {
+        const card = document.createElement('div');
+        card.className = 'log-card';
+
+        card.innerHTML = `
+          <strong>${escapeHtml(event.eventType || '')}</strong>
+          <div>${escapeHtml(event.eventAt || '')}</div>
+          <div>操作者：${escapeHtml(event.actorUserName || '')}</div>
+          <div>KIT：${escapeHtml(event.kitSerial || '')}</div>
+          <div>状態：${escapeHtml(event.beforeStatus || '')} → ${escapeHtml(event.afterStatus || '')}</div>
+          <div>${escapeHtml(event.message || '')}</div>
+          ${event.note ? `<div>備考：${escapeHtml(event.note || '')}</div>` : ''}
+        `;
+
+        list.appendChild(card);
+      });
+    }
+
+    function clearKitFilters() {
+      document.getElementById('kitFilterMachineType').value = '';
+      document.getElementById('kitFilterStatus').value = '';
+      document.getElementById('kitFilterBuilding').value = '';
+      document.getElementById('kitFilterKitType').value = '';
+      document.getElementById('kitFilterAssignmentStatus').value = '';
+      document.getElementById('kitFilterFratStatus').value = '';
+      document.getElementById('kitFilterShippingStatus').value = '';
+      document.getElementById('kitFilterKeyword').value = '';
+
+      loadKitList();
+    }
+
+    function makeKitCurrentPlaceText(item) {
+      if (item.currentStatus === '取付中') {
+        return item.currentEquipmentCh || item.currentEquipmentId || '装置取付中';
+      }
+
+      if (item.currentKariokiName) {
+        return `${item.currentBuilding || ''} / ${item.currentKariokiName}`;
+      }
+
+      if (item.currentLocationText) {
+        return `${item.currentBuilding || ''} / ${item.currentLocationText}`;
+      }
+
+      return item.currentBuilding || '未判定';
+    }
+
+    function makeKitAssignedPlaceText(item) {
+      if (!item.assignmentStatus || item.assignmentStatus === '未割当') {
+        return '未割当';
+      }
+
+      if (item.assignedEquipmentCh) {
+        return item.assignedEquipmentCh;
+      }
+
+      if (item.assignedEquipmentId) {
+        return item.assignedEquipmentId;
+      }
+
+      return '割当済';
+    }
+
+    function kitStatusBadge(status) {
+      if (!status) return '';
+
+      let type = 'gray';
+
+      if (status === '取付中') type = 'green';
+      if (status === '構内在庫') type = 'blue';
+      if (status === '出荷待ち') type = 'orange';
+      if (status === '構外') type = 'gray';
+
+      return `<span class="badge ${type}">${escapeHtml(status)}</span>`;
+    }
+
+    function kitTypeBadge(kitType) {
+      if (!kitType) return '';
+
+      const type = kitType === 'Full-Li' ? 'purple' : 'green';
+
+      return `<span class="badge ${type}">${escapeHtml(kitType)}</span>`;
+    }
+
+    function assignmentStatusBadge(status) {
+      if (!status) return '';
+
+      const type = status === '割当済' ? 'blue' : 'gray';
+
+      return `<span class="badge ${type}">${escapeHtml(status)}</span>`;
     }
 
     async function openLogPage() {
