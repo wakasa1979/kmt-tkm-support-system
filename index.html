@@ -45,8 +45,13 @@
       cursor: pointer;
     }
 
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
     .app {
-      max-width: 760px;
+      max-width: 820px;
       margin: 0 auto;
       padding: 16px;
       padding-bottom: 48px;
@@ -192,6 +197,14 @@
       margin-top: 0;
     }
 
+    .btn.mini {
+      width: auto;
+      padding: 7px 10px;
+      font-size: 12px;
+      border-radius: 999px;
+      margin-top: 0;
+    }
+
     .grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -225,20 +238,15 @@
       cursor: not-allowed;
     }
 
-    .filter-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-    }
-
+    .filter-grid,
     .form-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
     }
 
-    .form-grid .full,
-    .filter-grid .full {
+    .filter-grid .full,
+    .form-grid .full {
       grid-column: 1 / -1;
     }
 
@@ -311,6 +319,11 @@
       color: #6d28d9;
     }
 
+    .badge.gray {
+      background: #f3f4f6;
+      color: #4b5563;
+    }
+
     .detail-row {
       border-bottom: 1px solid var(--line);
       padding: 10px 0;
@@ -333,6 +346,7 @@
       display: flex;
       gap: 8px;
       margin-bottom: 12px;
+      flex-wrap: wrap;
     }
 
     .top-actions .btn {
@@ -393,7 +407,8 @@
       margin-bottom: 4px;
     }
 
-    .maintenance-card {
+    .maintenance-card,
+    .frat-card {
       border: 1px solid var(--line);
       border-radius: 16px;
       background: #fff;
@@ -403,14 +418,16 @@
       width: 100%;
     }
 
-    .maintenance-title {
+    .maintenance-title,
+    .frat-title {
       font-size: 16px;
       font-weight: 900;
       margin-bottom: 8px;
       word-break: break-word;
     }
 
-    .maintenance-main {
+    .maintenance-main,
+    .frat-main {
       display: grid;
       grid-template-columns: 1fr;
       gap: 6px;
@@ -418,19 +435,22 @@
       color: var(--text);
     }
 
-    .maintenance-line {
+    .maintenance-line,
+    .frat-line {
       display: flex;
       gap: 6px;
       line-height: 1.5;
     }
 
-    .maintenance-line-label {
+    .maintenance-line-label,
+    .frat-line-label {
       color: var(--muted);
-      min-width: 72px;
+      min-width: 84px;
       font-weight: 700;
     }
 
-    .maintenance-line-value {
+    .maintenance-line-value,
+    .frat-line-value {
       font-weight: 800;
       word-break: break-word;
     }
@@ -455,6 +475,44 @@
       margin-top: 0;
       width: auto;
       min-width: 92px;
+    }
+
+    .frat-group-title {
+      font-size: 15px;
+      font-weight: 900;
+      margin: 18px 0 8px;
+      color: var(--main);
+      border-left: 5px solid var(--main);
+      padding-left: 10px;
+    }
+
+    .frat-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .frat-status-box {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px;
+      margin-top: 12px;
+      background: #f9fafb;
+    }
+
+    .frat-status-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .frat-danger-zone {
+      border: 1px solid #fecaca;
+      background: #fff7f7;
+      border-radius: 16px;
+      padding: 12px;
+      margin-top: 16px;
     }
 
     .shift-header-box {
@@ -809,15 +867,10 @@
         padding: 18px 14px 22px;
       }
 
-      .grid {
-        grid-template-columns: 1fr;
-      }
-
-      .filter-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .form-grid {
+      .grid,
+      .filter-grid,
+      .form-grid,
+      .frat-status-grid {
         grid-template-columns: 1fr;
       }
 
@@ -826,6 +879,14 @@
       }
 
       .btn.small {
+        width: 100%;
+      }
+
+      .frat-actions {
+        flex-direction: column;
+      }
+
+      .frat-actions .btn {
         width: 100%;
       }
 
@@ -953,6 +1014,11 @@
             <span>装置ID・日付・建屋・機種・メンテ内容で次回メンテ予定を検索します。</span>
           </button>
 
+          <button class="menu-button" onclick="openFratPage()">
+            <strong>FRAT・出荷管理</strong>
+            <span>FRAT貼付、保留、対象外、出荷完了を管理します。</span>
+          </button>
+
           <button class="menu-button" onclick="openLogPage()">
             <strong>操作履歴</strong>
             <span>登録・更新・削除などの操作履歴を確認します。</span>
@@ -960,11 +1026,6 @@
 
           <button class="menu-button disabled" onclick="showInfo('在庫管理は次回以降に追加予定です。')">
             <strong>在庫管理</strong>
-            <span>準備中</span>
-          </button>
-
-          <button class="menu-button disabled" onclick="showInfo('FRAT管理は次回以降に追加予定です。')">
-            <strong>FRAT管理</strong>
             <span>準備中</span>
           </button>
 
@@ -1100,6 +1161,231 @@
       </div>
     </section>
 
+    <section id="pageFrat" class="page">
+      <div class="top-actions">
+        <button class="btn small secondary" onclick="showPage('pageHome')">← ホーム</button>
+        <button class="btn small blue" onclick="loadFratTargets()">更新</button>
+        <button class="btn small success" onclick="openManualFratForm()">＋ 手動追加</button>
+        <button class="btn small secondary" onclick="openFratHistoryPage()">出荷済み履歴</button>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">FRAT・出荷管理</h2>
+
+        <div class="filter-grid">
+          <div>
+            <label class="label" for="fratFilterMachineType">機種</label>
+            <select id="fratFilterMachineType" class="select"></select>
+          </div>
+
+          <div>
+            <label class="label" for="fratFilterBuilding">建屋</label>
+            <select id="fratFilterBuilding" class="select"></select>
+          </div>
+
+          <div>
+            <label class="label" for="fratFilterFratStatus">FRAT状態</label>
+            <select id="fratFilterFratStatus" class="select"></select>
+          </div>
+
+          <div>
+            <label class="label" for="fratFilterShippingStatus">出荷状態</label>
+            <select id="fratFilterShippingStatus" class="select"></select>
+          </div>
+
+          <div>
+            <label class="label" for="fratFilterDateFrom">対象日 開始</label>
+            <input id="fratFilterDateFrom" class="input" type="date" />
+          </div>
+
+          <div>
+            <label class="label" for="fratFilterDateTo">対象日 終了</label>
+            <input id="fratFilterDateTo" class="input" type="date" />
+          </div>
+
+          <div class="full">
+            <label class="label" for="fratFilterKeyword">キーワード</label>
+            <input id="fratFilterKeyword" class="input" type="text" placeholder="KIT No. / 装置ID / P/N / ToolIDなど" />
+          </div>
+        </div>
+
+        <button class="btn blue" onclick="loadFratTargets()">検索</button>
+        <button class="btn secondary" onclick="clearFratFilters()">条件クリア</button>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">処理中一覧 <span id="fratTargetCount"></span></h2>
+        <div id="fratTargetList" class="list"></div>
+      </div>
+    </section>
+
+    <section id="pageFratDetail" class="page">
+      <div class="top-actions">
+        <button class="btn small secondary" onclick="showPage('pageFrat')">← 一覧へ</button>
+        <button class="btn small blue" onclick="refreshCurrentFratDetail()">更新</button>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">FRAT対象詳細</h2>
+        <div id="fratDetailArea"></div>
+
+        <div class="frat-status-box">
+          <h3 class="section-title">ステータス変更</h3>
+
+          <div class="frat-status-grid">
+            <div>
+              <label class="label" for="fratDetailFratStatus">FRAT状態</label>
+              <select id="fratDetailFratStatus" class="select"></select>
+              <button class="btn blue" onclick="saveCurrentFratStatus()">FRAT状態を保存</button>
+            </div>
+
+            <div>
+              <label class="label" for="fratDetailShippingStatus">出荷状態</label>
+              <select id="fratDetailShippingStatus" class="select"></select>
+              <button class="btn success" onclick="saveCurrentShippingStatus()">出荷状態を保存</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="frat-danger-zone">
+          <h3 class="section-title">手動除外</h3>
+          <p class="list-card-meta">
+            誤登録や対象外になった場合に、処理中一覧から除外します。完全削除ではなく操作履歴に残ります。
+          </p>
+          <button class="btn danger" onclick="excludeCurrentFratTarget()">この対象を除外する</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="pageFratManual" class="page">
+      <div class="top-actions">
+        <button class="btn small secondary" onclick="showPage('pageFrat')">← FRAT一覧へ</button>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">FRAT対象 手動追加</h2>
+
+        <div class="form-grid">
+          <div>
+            <label class="label" for="manualFratMachineType">機種</label>
+            <select id="manualFratMachineType" class="select"></select>
+          </div>
+
+          <div>
+            <label class="label" for="manualFratSourceDate">対象日</label>
+            <input id="manualFratSourceDate" class="input" type="date" />
+          </div>
+
+          <div>
+            <label class="label" for="manualFratBuilding">建屋</label>
+            <select id="manualFratBuilding" class="select"></select>
+          </div>
+
+          <div>
+            <label class="label" for="manualFratEquipmentId">装置ID</label>
+            <input id="manualFratEquipmentId" class="input" type="text" placeholder="例：427205" />
+          </div>
+
+          <div class="full">
+            <label class="label" for="manualFratRemovedSerial">対象シリアル / KIT No.</label>
+            <input id="manualFratRemovedSerial" class="input" type="text" placeholder="取り外し側KIT No." />
+          </div>
+
+          <div>
+            <label class="label" for="manualFratPartNumber">P/N</label>
+            <input id="manualFratPartNumber" class="input" type="text" />
+          </div>
+
+          <div>
+            <label class="label" for="manualFratInstalledSerial">取り付けKIT No.</label>
+            <input id="manualFratInstalledSerial" class="input" type="text" />
+          </div>
+
+          <div>
+            <label class="label" for="manualFratToolChamber">ToolID-CHAMBER-Ch</label>
+            <input id="manualFratToolChamber" class="input" type="text" placeholder="例：427205-CHAMBER-A1" />
+          </div>
+
+          <div>
+            <label class="label" for="manualFratMaintenanceType">メンテタイプ</label>
+            <input id="manualFratMaintenanceType" class="input" type="text" placeholder="PM / CM" />
+          </div>
+
+          <div>
+            <label class="label" for="manualFratWafersCount">Wafers Count</label>
+            <input id="manualFratWafersCount" class="input" type="text" />
+          </div>
+
+          <div>
+            <label class="label" for="manualFratRfHours">RF Hours</label>
+            <input id="manualFratRfHours" class="input" type="text" />
+          </div>
+
+          <div>
+            <label class="label" for="manualFratReplaceReason">交換理由</label>
+            <input id="manualFratReplaceReason" class="input" type="text" />
+          </div>
+
+          <div>
+            <label class="label" for="manualFratDoa">DOA</label>
+            <input id="manualFratDoa" class="input" type="text" placeholder="YES / NO" />
+          </div>
+
+          <div class="full">
+            <label class="label" for="manualFratNote">備考</label>
+            <textarea id="manualFratNote" class="textarea"></textarea>
+          </div>
+        </div>
+
+        <button class="btn success" onclick="saveManualFratTarget()">手動追加する</button>
+      </div>
+    </section>
+
+    <section id="pageFratHistory" class="page">
+      <div class="top-actions">
+        <button class="btn small secondary" onclick="showPage('pageFrat')">← FRAT一覧へ</button>
+        <button class="btn small blue" onclick="loadFratHistory()">更新</button>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">出荷済み履歴</h2>
+
+        <div class="filter-grid">
+          <div>
+            <label class="label" for="fratHistoryMachineType">機種</label>
+            <select id="fratHistoryMachineType" class="select"></select>
+          </div>
+
+          <div>
+            <label class="label" for="fratHistoryBuilding">建屋</label>
+            <select id="fratHistoryBuilding" class="select"></select>
+          </div>
+
+          <div>
+            <label class="label" for="fratHistoryDateFrom">完了日 開始</label>
+            <input id="fratHistoryDateFrom" class="input" type="date" />
+          </div>
+
+          <div>
+            <label class="label" for="fratHistoryDateTo">完了日 終了</label>
+            <input id="fratHistoryDateTo" class="input" type="date" />
+          </div>
+
+          <div class="full">
+            <label class="label" for="fratHistoryKeyword">キーワード</label>
+            <input id="fratHistoryKeyword" class="input" type="text" placeholder="KIT No. / 装置ID / 担当者など" />
+          </div>
+        </div>
+
+        <button class="btn blue" onclick="loadFratHistory()">検索</button>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">履歴一覧 <span id="fratHistoryCount"></span></h2>
+        <div id="fratHistoryList" class="list"></div>
+      </div>
+    </section>
+
     <section id="pageDetail" class="page">
       <div class="top-actions">
         <button class="btn small secondary" onclick="showPage('pageSearch')">← 一覧へ</button>
@@ -1176,7 +1462,7 @@
         <input id="formAreaSize" class="input" type="text" placeholder="例：パレット2枚分 / 約2m×3m" />
 
         <label class="label" for="formNearestRoom">最寄前室</label>
-        <input id="formNearestRoom" class="input" type="text" placeholder="例：Y5南前室" />
+        <input id="formNearestRoom" class="input" type="text" placeholder="例：2N4 / 3S5 / 1E4" />
 
         <div class="section-title">仮置き期間</div>
 
@@ -1285,6 +1571,12 @@
       user: JSON.parse(localStorage.getItem('kmt_user') || 'null'),
       buildings: [],
       options: {},
+      fratOptions: {
+        fratStatus: ['未貼付', '貼付済', '対象外', '保留'],
+        shippingStatus: ['未出荷', '出荷済', '保留中'],
+        machineType: ['MESA', 'SYM3'],
+        building: ['未判定', 'Y2', 'Y3', 'Y4', 'Y5', 'Y6', 'Y7']
+      },
       currentList: [],
       currentItem: null,
       formMode: 'create',
@@ -1299,7 +1591,10 @@
       maintenanceTotalPages: 1,
       maintenanceTotalCount: 0,
       maintenancePageSize: 50,
-      maintenanceCurrentItem: null
+      maintenanceCurrentItem: null,
+      fratTargets: [],
+      currentFratTarget: null,
+      fratHistory: []
     };
 
     window.addEventListener('load', async () => {
@@ -1474,8 +1769,10 @@
 
       state.buildings = result.buildings || [];
       state.options = result.options || {};
+      state.fratOptions = result.fratOptions || state.fratOptions;
 
       renderSelectOptions();
+      renderFratSelectOptions();
     }
 
     function renderSelectOptions() {
@@ -1491,6 +1788,22 @@
       renderOptionSelect('formCategory2', state.options.category2 || [], false);
       renderOptionSelect('formMaintenanceType', state.options.maintenanceType || [], false);
       renderOptionSelect('formStatus', state.options.kariokiStatus || [], false);
+    }
+
+    function renderFratSelectOptions() {
+      renderStaticSelect('fratFilterMachineType', state.fratOptions.machineType, true);
+      renderStaticSelect('fratFilterBuilding', state.fratOptions.building, true);
+      renderStaticSelect('fratFilterFratStatus', state.fratOptions.fratStatus, true);
+      renderStaticSelect('fratFilterShippingStatus', state.fratOptions.shippingStatus, true);
+
+      renderStaticSelect('fratDetailFratStatus', state.fratOptions.fratStatus, false);
+      renderStaticSelect('fratDetailShippingStatus', state.fratOptions.shippingStatus, false);
+
+      renderStaticSelect('manualFratMachineType', state.fratOptions.machineType, false);
+      renderStaticSelect('manualFratBuilding', state.fratOptions.building, false);
+
+      renderStaticSelect('fratHistoryMachineType', state.fratOptions.machineType, true);
+      renderStaticSelect('fratHistoryBuilding', state.fratOptions.building, true);
     }
 
     function renderBuildingSelect(elementId, includeAll) {
@@ -1522,6 +1835,22 @@
       }
 
       options.forEach(value => {
+        select.appendChild(createOption(value, value));
+      });
+    }
+
+    function renderStaticSelect(elementId, options, includeAll) {
+      const select = document.getElementById(elementId);
+
+      if (!select) return;
+
+      select.innerHTML = '';
+
+      if (includeAll) {
+        select.appendChild(createOption('', 'すべて'));
+      }
+
+      (options || []).forEach(value => {
         select.appendChild(createOption(value, value));
       });
     }
@@ -1899,14 +2228,31 @@
     }
 
     async function openMaintenancePage() {
-  showPage('pageMaintenance');
+      showPage('pageMaintenance');
 
-  // 初回表示時は全件検索しない
-  // すでに検索済みの結果がある場合だけ、そのまま表示する
-  if (state.maintenanceList.length === 0 && state.maintenanceTotalCount === 0) {
-    renderMaintenanceInitialMessage();
-  }
-}
+      if (state.maintenanceList.length === 0 && state.maintenanceTotalCount === 0) {
+        renderMaintenanceInitialMessage();
+      }
+    }
+
+    function renderMaintenanceInitialMessage() {
+      const list = document.getElementById('maintenanceList');
+      const count = document.getElementById('maintenanceResultCount');
+      const top = document.getElementById('maintenancePagerTop');
+      const bottom = document.getElementById('maintenancePagerBottom');
+
+      count.textContent = '';
+      top.innerHTML = '';
+      bottom.innerHTML = '';
+
+      list.innerHTML = `
+        <div class="maintenance-card">
+          <div class="list-card-meta">
+            装置ID、メンテ予定日、建屋、機種、メンテ内容などの検索条件を入力してから検索してください。
+          </div>
+        </div>
+      `;
+    }
 
     function getMaintenanceFilters() {
       return {
@@ -1919,9 +2265,26 @@
       };
     }
 
+    function hasMaintenanceSearchCondition(filters) {
+      return Boolean(
+        filters.equipmentKeyword ||
+        filters.dateFrom ||
+        filters.dateTo ||
+        filters.building ||
+        filters.machineType ||
+        filters.maintenanceTextKeyword
+      );
+    }
+
     async function searchMaintenanceList(page) {
       try {
         const filters = getMaintenanceFilters();
+
+        if (!hasMaintenanceSearchCondition(filters)) {
+          renderMaintenanceInitialMessage();
+          showInfo('検索条件を1つ以上入力してください。');
+          return;
+        }
 
         if (filters.dateFrom && filters.dateTo && filters.dateFrom > filters.dateTo) {
           showError('終了日は開始日以降にしてください。');
@@ -2036,7 +2399,12 @@
       document.getElementById('maintenanceMachineType').value = '';
       document.getElementById('maintenanceTextKeyword').value = '';
 
-      searchMaintenanceList(1);
+      state.maintenanceList = [];
+      state.maintenanceCurrentPage = 1;
+      state.maintenanceTotalPages = 1;
+      state.maintenanceTotalCount = 0;
+
+      renderMaintenanceInitialMessage();
     }
 
     async function openMaintenanceDetail(maintenanceId) {
@@ -2077,6 +2445,475 @@
         ${detailRow('元ファイル', item.sourceFileName)}
         ${detailRow('取込日時', item.importedAt)}
       `;
+    }
+
+    async function openFratPage() {
+      showPage('pageFrat');
+
+      if (state.fratTargets.length === 0) {
+        await loadFratTargets();
+      }
+    }
+
+    function getFratFilters() {
+      return {
+        machineType: document.getElementById('fratFilterMachineType').value,
+        building: document.getElementById('fratFilterBuilding').value,
+        fratStatus: document.getElementById('fratFilterFratStatus').value,
+        shippingStatus: document.getElementById('fratFilterShippingStatus').value,
+        sourceDateFrom: document.getElementById('fratFilterDateFrom').value,
+        sourceDateTo: document.getElementById('fratFilterDateTo').value,
+        keyword: document.getElementById('fratFilterKeyword').value.trim()
+      };
+    }
+
+    async function loadFratTargets() {
+      try {
+        const filters = getFratFilters();
+
+        if (filters.sourceDateFrom && filters.sourceDateTo && filters.sourceDateFrom > filters.sourceDateTo) {
+          showError('終了日は開始日以降にしてください。');
+          return;
+        }
+
+        const result = await apiRequest('getFratTargetList', { filters });
+
+        state.fratTargets = result.data || [];
+
+        renderFratTargets();
+
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    function renderFratTargets() {
+      const list = document.getElementById('fratTargetList');
+      const count = document.getElementById('fratTargetCount');
+
+      count.textContent = `（${state.fratTargets.length}件）`;
+      list.innerHTML = '';
+
+      if (state.fratTargets.length === 0) {
+        list.innerHTML = '<div class="frat-card"><div class="list-card-meta">処理中のFRAT対象はありません。</div></div>';
+        return;
+      }
+
+      const grouped = {};
+
+      state.fratTargets.forEach(item => {
+        const key = item.building || '未判定';
+
+        if (!grouped[key]) {
+          grouped[key] = [];
+        }
+
+        grouped[key].push(item);
+      });
+
+      Object.keys(grouped).sort().forEach(building => {
+        const title = document.createElement('div');
+        title.className = 'frat-group-title';
+        title.textContent = `${building}（${grouped[building].length}件）`;
+        list.appendChild(title);
+
+        grouped[building].forEach(item => {
+          const card = document.createElement('div');
+          card.className = 'frat-card';
+
+          card.innerHTML = `
+            <div class="frat-title">${escapeHtml(item.removedSerial || '')}</div>
+
+            <div class="frat-main">
+              <div class="frat-line">
+                <span class="frat-line-label">機種</span>
+                <span class="frat-line-value">${escapeHtml(item.machineType || '')}</span>
+              </div>
+
+              <div class="frat-line">
+                <span class="frat-line-label">対象日</span>
+                <span class="frat-line-value">${escapeHtml(item.sourceDateText || '')}</span>
+              </div>
+
+              <div class="frat-line">
+                <span class="frat-line-label">装置ID</span>
+                <span class="frat-line-value">${escapeHtml(item.equipmentId || '')}</span>
+              </div>
+
+              <div class="frat-line">
+                <span class="frat-line-label">Tool/Ch</span>
+                <span class="frat-line-value">${escapeHtml(item.toolChamber || '')}</span>
+              </div>
+
+              <div class="frat-line">
+                <span class="frat-line-label">W/C・RF</span>
+                <span class="frat-line-value">${escapeHtml(item.wafersCount || '')} / ${escapeHtml(item.rfHours || '')}</span>
+              </div>
+            </div>
+
+            <div class="badge-row">
+              ${badge(item.building || '未判定', 'blue')}
+              ${fratStatusBadge(item.fratStatus)}
+              ${shippingStatusBadge(item.shippingStatus)}
+              ${item.manualFlag === 'TRUE' ? badge('手動追加', 'orange') : ''}
+            </div>
+
+            <div class="frat-actions">
+              <button class="btn mini blue" onclick="openFratDetail('${escapeJs(item.targetId)}')">詳細</button>
+              <button class="btn mini success" onclick="quickUpdateFratStatus('${escapeJs(item.targetId)}', '貼付済')">FRAT貼付</button>
+              <button class="btn mini warning" onclick="quickUpdateFratStatus('${escapeJs(item.targetId)}', '保留')">保留</button>
+              <button class="btn mini secondary" onclick="quickUpdateFratStatus('${escapeJs(item.targetId)}', '対象外')">対象外</button>
+              <button class="btn mini success" onclick="quickUpdateShippingStatus('${escapeJs(item.targetId)}', '出荷済')">出荷済み</button>
+            </div>
+          `;
+
+          list.appendChild(card);
+        });
+      });
+    }
+
+    async function openFratDetail(targetId) {
+      try {
+        const result = await apiRequest('getFratTargetDetail', { targetId });
+
+        state.currentFratTarget = result.data;
+
+        renderFratDetail();
+        showPage('pageFratDetail');
+
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    async function refreshCurrentFratDetail() {
+      if (!state.currentFratTarget || !state.currentFratTarget.targetId) {
+        showError('更新対象がありません。');
+        return;
+      }
+
+      await openFratDetail(state.currentFratTarget.targetId);
+    }
+
+    function renderFratDetail() {
+      const item = state.currentFratTarget;
+      const area = document.getElementById('fratDetailArea');
+
+      if (!item) {
+        area.innerHTML = '';
+        return;
+      }
+
+      document.getElementById('fratDetailFratStatus').value = item.fratStatus || '未貼付';
+      document.getElementById('fratDetailShippingStatus').value = item.shippingStatus || '未出荷';
+
+      area.innerHTML = `
+        ${detailRow('対象シリアル / KIT No.', item.removedSerial)}
+        ${detailRow('機種', item.machineType)}
+        ${detailRow('対象日', item.sourceDateText)}
+        ${detailRow('建屋', item.building)}
+        ${detailRow('P/N', item.partNumber)}
+        ${detailRow('取り付けKIT No.', item.installedSerial)}
+        ${detailRow('装置ID', item.equipmentId)}
+        ${detailRow('メンテタイプ', item.maintenanceType)}
+        ${detailRow('ToolID-CHAMBER-Ch', item.toolChamber)}
+        ${detailRow('Is Kit unused?', item.isKitUnused)}
+        ${detailRow('Was Kit exposed to copper?', item.exposedToCopper)}
+        ${detailRow('Did Kit fail prematurely?', item.failPrematurely)}
+        ${detailRow('Wafers Count', item.wafersCount)}
+        ${detailRow('RF Hours', item.rfHours)}
+        ${detailRow('交換理由', item.replaceReason)}
+        ${detailRow('DOA', item.doa)}
+        ${detailRow('FRAT状態', item.fratStatus)}
+        ${detailRow('FRAT更新者', item.fratUpdatedByUserName)}
+        ${detailRow('FRAT更新日時', item.fratUpdatedAt)}
+        ${detailRow('出荷状態', item.shippingStatus)}
+        ${detailRow('出荷更新者', item.shippingUpdatedByUserName)}
+        ${detailRow('出荷更新日時', item.shippingUpdatedAt)}
+        ${detailRow('元ファイル', item.sourceFileName)}
+        ${detailRow('メール受信日時', item.sourceMessageDate)}
+        ${detailRow('手動追加', item.manualFlag)}
+        ${detailRow('備考', item.note)}
+      `;
+    }
+
+    async function quickUpdateFratStatus(targetId, fratStatus) {
+      try {
+        await apiRequest('updateFratStatus', { targetId, fratStatus });
+        showSuccess(`FRAT状態を「${fratStatus}」に変更しました。`);
+        await loadFratTargets();
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    async function quickUpdateShippingStatus(targetId, shippingStatus) {
+      if (shippingStatus === '出荷済') {
+        const ok = confirm('出荷済みにすると、処理中一覧から消えて出荷済み履歴へ移動します。実行しますか？');
+        if (!ok) return;
+      }
+
+      try {
+        await apiRequest('updateFratShippingStatus', { targetId, shippingStatus });
+        showSuccess(`出荷状態を「${shippingStatus}」に変更しました。`);
+        await loadFratTargets();
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    async function saveCurrentFratStatus() {
+      if (!state.currentFratTarget) {
+        showError('対象データがありません。');
+        return;
+      }
+
+      const fratStatus = document.getElementById('fratDetailFratStatus').value;
+
+      try {
+        const result = await apiRequest('updateFratStatus', {
+          targetId: state.currentFratTarget.targetId,
+          fratStatus
+        });
+
+        state.currentFratTarget = result.data;
+        renderFratDetail();
+        showSuccess('FRAT状態を保存しました。');
+
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    async function saveCurrentShippingStatus() {
+      if (!state.currentFratTarget) {
+        showError('対象データがありません。');
+        return;
+      }
+
+      const shippingStatus = document.getElementById('fratDetailShippingStatus').value;
+
+      if (shippingStatus === '出荷済') {
+        const ok = confirm('出荷済みにすると、処理中一覧から消えて出荷済み履歴へ移動します。実行しますか？');
+        if (!ok) return;
+      }
+
+      try {
+        const result = await apiRequest('updateFratShippingStatus', {
+          targetId: state.currentFratTarget.targetId,
+          shippingStatus
+        });
+
+        showSuccess('出荷状態を保存しました。');
+
+        if (result.movedToHistory) {
+          state.currentFratTarget = null;
+          await loadFratTargets();
+          showPage('pageFrat');
+        } else {
+          state.currentFratTarget = result.data;
+          renderFratDetail();
+        }
+
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    async function excludeCurrentFratTarget() {
+      if (!state.currentFratTarget) {
+        showError('対象データがありません。');
+        return;
+      }
+
+      const reason = prompt('除外理由を入力してください。', '手動除外');
+
+      if (reason === null) return;
+
+      const ok = confirm(`この対象を処理中一覧から除外します。\n\n${state.currentFratTarget.removedSerial}\n\n実行しますか？`);
+
+      if (!ok) return;
+
+      try {
+        await apiRequest('excludeFratTarget', {
+          targetId: state.currentFratTarget.targetId,
+          reason: reason
+        });
+
+        showSuccess('処理中一覧から除外しました。');
+
+        state.currentFratTarget = null;
+
+        await loadFratTargets();
+        showPage('pageFrat');
+
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    function openManualFratForm() {
+      clearManualFratForm();
+      showPage('pageFratManual');
+    }
+
+    function clearManualFratForm() {
+      document.getElementById('manualFratMachineType').value = 'MESA';
+      document.getElementById('manualFratSourceDate').value = getTodayText();
+      document.getElementById('manualFratBuilding').value = '未判定';
+      document.getElementById('manualFratEquipmentId').value = '';
+      document.getElementById('manualFratRemovedSerial').value = '';
+      document.getElementById('manualFratPartNumber').value = '';
+      document.getElementById('manualFratInstalledSerial').value = '';
+      document.getElementById('manualFratToolChamber').value = '';
+      document.getElementById('manualFratMaintenanceType').value = '';
+      document.getElementById('manualFratWafersCount').value = '';
+      document.getElementById('manualFratRfHours').value = '';
+      document.getElementById('manualFratReplaceReason').value = '';
+      document.getElementById('manualFratDoa').value = '';
+      document.getElementById('manualFratNote').value = '';
+    }
+
+    async function saveManualFratTarget() {
+      const data = {
+        machineType: document.getElementById('manualFratMachineType').value,
+        sourceDate: document.getElementById('manualFratSourceDate').value,
+        building: document.getElementById('manualFratBuilding').value,
+        equipmentId: document.getElementById('manualFratEquipmentId').value.trim(),
+        removedSerial: document.getElementById('manualFratRemovedSerial').value.trim(),
+        partNumber: document.getElementById('manualFratPartNumber').value.trim(),
+        installedSerial: document.getElementById('manualFratInstalledSerial').value.trim(),
+        toolChamber: document.getElementById('manualFratToolChamber').value.trim(),
+        maintenanceType: document.getElementById('manualFratMaintenanceType').value.trim(),
+        wafersCount: document.getElementById('manualFratWafersCount').value.trim(),
+        rfHours: document.getElementById('manualFratRfHours').value.trim(),
+        replaceReason: document.getElementById('manualFratReplaceReason').value.trim(),
+        doa: document.getElementById('manualFratDoa').value.trim(),
+        note: document.getElementById('manualFratNote').value.trim()
+      };
+
+      if (!data.machineType) {
+        showError('機種を選択してください。');
+        return;
+      }
+
+      if (!data.removedSerial) {
+        showError('対象シリアル / KIT No. を入力してください。');
+        return;
+      }
+
+      try {
+        await apiRequest('createManualFratTarget', { data });
+
+        showSuccess('FRAT対象を手動追加しました。');
+
+        await loadFratTargets();
+        showPage('pageFrat');
+
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    function clearFratFilters() {
+      document.getElementById('fratFilterMachineType').value = '';
+      document.getElementById('fratFilterBuilding').value = '';
+      document.getElementById('fratFilterFratStatus').value = '';
+      document.getElementById('fratFilterShippingStatus').value = '';
+      document.getElementById('fratFilterDateFrom').value = '';
+      document.getElementById('fratFilterDateTo').value = '';
+      document.getElementById('fratFilterKeyword').value = '';
+
+      loadFratTargets();
+    }
+
+    async function openFratHistoryPage() {
+      showPage('pageFratHistory');
+
+      if (state.fratHistory.length === 0) {
+        await loadFratHistory();
+      }
+    }
+
+    async function loadFratHistory() {
+      try {
+        const filters = {
+          machineType: document.getElementById('fratHistoryMachineType').value,
+          building: document.getElementById('fratHistoryBuilding').value,
+          completedDateFrom: document.getElementById('fratHistoryDateFrom').value,
+          completedDateTo: document.getElementById('fratHistoryDateTo').value,
+          keyword: document.getElementById('fratHistoryKeyword').value.trim()
+        };
+
+        if (filters.completedDateFrom && filters.completedDateTo && filters.completedDateFrom > filters.completedDateTo) {
+          showError('終了日は開始日以降にしてください。');
+          return;
+        }
+
+        const result = await apiRequest('getFratHistoryList', {
+          filters,
+          limit: 300
+        });
+
+        state.fratHistory = result.data || [];
+
+        renderFratHistory();
+
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    function renderFratHistory() {
+      const list = document.getElementById('fratHistoryList');
+      const count = document.getElementById('fratHistoryCount');
+
+      count.textContent = `（${state.fratHistory.length}件）`;
+      list.innerHTML = '';
+
+      if (state.fratHistory.length === 0) {
+        list.innerHTML = '<div class="frat-card"><div class="list-card-meta">出荷済み履歴はありません。</div></div>';
+        return;
+      }
+
+      state.fratHistory.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'frat-card';
+
+        card.innerHTML = `
+          <div class="frat-title">${escapeHtml(item.removedSerial || '')}</div>
+
+          <div class="frat-main">
+            <div class="frat-line">
+              <span class="frat-line-label">機種</span>
+              <span class="frat-line-value">${escapeHtml(item.machineType || '')}</span>
+            </div>
+
+            <div class="frat-line">
+              <span class="frat-line-label">装置ID</span>
+              <span class="frat-line-value">${escapeHtml(item.equipmentId || '')}</span>
+            </div>
+
+            <div class="frat-line">
+              <span class="frat-line-label">完了日時</span>
+              <span class="frat-line-value">${escapeHtml(item.completedAt || '')}</span>
+            </div>
+
+            <div class="frat-line">
+              <span class="frat-line-label">完了者</span>
+              <span class="frat-line-value">${escapeHtml(item.completedByUserName || '')}</span>
+            </div>
+          </div>
+
+          <div class="badge-row">
+            ${badge(item.building || '未判定', 'blue')}
+            ${fratStatusBadge(item.fratStatus)}
+            ${shippingStatusBadge(item.shippingStatus)}
+          </div>
+        `;
+
+        list.appendChild(card);
+      });
     }
 
     async function openLogPage() {
@@ -2609,6 +3446,31 @@
       return `<span class="badge ${type}">${escapeHtml(status)}</span>`;
     }
 
+    function fratStatusBadge(status) {
+      if (!status) return '';
+
+      let type = 'gray';
+
+      if (status === '未貼付') type = 'orange';
+      if (status === '貼付済') type = 'green';
+      if (status === '対象外') type = 'gray';
+      if (status === '保留') type = 'purple';
+
+      return `<span class="badge ${type}">FRAT:${escapeHtml(status)}</span>`;
+    }
+
+    function shippingStatusBadge(status) {
+      if (!status) return '';
+
+      let type = 'gray';
+
+      if (status === '未出荷') type = 'orange';
+      if (status === '出荷済') type = 'green';
+      if (status === '保留中') type = 'purple';
+
+      return `<span class="badge ${type}">出荷:${escapeHtml(status)}</span>`;
+    }
+
     function escapeHtml(value) {
       return String(value ?? '')
         .replaceAll('&', '&amp;')
@@ -2616,6 +3478,15 @@
         .replaceAll('>', '&gt;')
         .replaceAll('"', '&quot;')
         .replaceAll("'", '&#039;');
+    }
+
+    function escapeJs(value) {
+      return String(value ?? '')
+        .replaceAll('\\', '\\\\')
+        .replaceAll("'", "\\'")
+        .replaceAll('"', '\\"')
+        .replaceAll('\n', '\\n')
+        .replaceAll('\r', '');
     }
 
     function formatDateForInput(value) {
