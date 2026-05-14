@@ -2520,6 +2520,7 @@
         grouped[building].forEach(item => {
           const card = document.createElement('div');
           card.className = 'frat-card';
+                    const canShip = item.fratStatus === '貼付済';
 
           card.innerHTML = `
             <div class="frat-title">${escapeHtml(item.removedSerial || '')}</div>
@@ -2563,7 +2564,7 @@
               <button class="btn mini success" onclick="quickUpdateFratStatus('${escapeJs(item.targetId)}', '貼付済')">FRAT貼付</button>
               <button class="btn mini warning" onclick="quickUpdateFratStatus('${escapeJs(item.targetId)}', '保留')">保留</button>
               <button class="btn mini secondary" onclick="quickUpdateFratStatus('${escapeJs(item.targetId)}', '対象外')">対象外</button>
-              <button class="btn mini success" onclick="quickUpdateShippingStatus('${escapeJs(item.targetId)}', '出荷済')">出荷済み</button>
+              <button class="btn mini success" onclick="quickUpdateShippingStatus('${escapeJs(item.targetId)}', '出荷済')" ${canShip ? '' : 'disabled'}>${canShip ? '出荷済み' : 'FRAT後に出荷'}</button>
             </div>
           `;
 
@@ -2647,8 +2648,15 @@
       }
     }
 
-    async function quickUpdateShippingStatus(targetId, shippingStatus) {
+        async function quickUpdateShippingStatus(targetId, shippingStatus) {
       if (shippingStatus === '出荷済') {
+        const target = state.fratTargets.find(item => String(item.targetId) === String(targetId));
+
+        if (target && target.fratStatus !== '貼付済') {
+          showError('FRAT貼付済みになっていないため、出荷済みにできません。');
+          return;
+        }
+
         const ok = confirm('出荷済みにすると、処理中一覧から消えて出荷済み履歴へ移動します。実行しますか？');
         if (!ok) return;
       }
@@ -2691,9 +2699,14 @@
         return;
       }
 
-      const shippingStatus = document.getElementById('fratDetailShippingStatus').value;
+            const shippingStatus = document.getElementById('fratDetailShippingStatus').value;
 
       if (shippingStatus === '出荷済') {
+        if (state.currentFratTarget.fratStatus !== '貼付済') {
+          showError('FRAT貼付済みになっていないため、出荷済みにできません。');
+          return;
+        }
+
         const ok = confirm('出荷済みにすると、処理中一覧から消えて出荷済み履歴へ移動します。実行しますか？');
         if (!ok) return;
       }
