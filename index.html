@@ -510,6 +510,110 @@
       margin-top: 12px;
     }
 
+    .frat-bulk-bar {
+      display: none;
+      border: 1px solid #bfdbfe;
+      background: #eff6ff;
+      border-radius: 16px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+
+    .frat-bulk-bar.show {
+      display: block;
+    }
+
+    .frat-bulk-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .frat-bulk-text {
+      font-size: 13px;
+      font-weight: 900;
+      color: #1e40af;
+    }
+
+    .frat-select-line {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .frat-select-check {
+      width: 18px;
+      height: 18px;
+      accent-color: #2563eb;
+      flex: 0 0 auto;
+    }
+
+    .frat-card.processed {
+      background: #f9fafb;
+      border-color: #d1d5db;
+    }
+
+    .frat-card.processed .frat-title {
+      color: #374151;
+    }
+
+    .frat-card.hold {
+      background: #faf5ff;
+      border-color: #ddd6fe;
+    }
+
+    .frat-card.excluded {
+      background: #f3f4f6;
+      border-color: #d1d5db;
+      opacity: 0.86;
+    }
+
+    .frat-chip {
+      width: auto;
+      border: 1px solid #d1d5db;
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 12px;
+      font-weight: 800;
+      background: #ffffff;
+      color: #374151;
+      margin-top: 0;
+    }
+
+    .frat-chip.primary {
+      background: #ecfdf5;
+      border-color: #bbf7d0;
+      color: #15803d;
+    }
+
+    .frat-chip.hold {
+      background: #faf5ff;
+      border-color: #ddd6fe;
+      color: #7e22ce;
+    }
+
+    .frat-chip.gray {
+      background: #f3f4f6;
+      border-color: #d1d5db;
+      color: #4b5563;
+    }
+
+    .frat-chip.ship {
+      background: #dcfce7;
+      border-color: #86efac;
+      color: #15803d;
+    }
+
+    .frat-chip.disabled {
+      background: #f3f4f6;
+      color: #9ca3af;
+      border-color: #e5e7eb;
+    }
+
+    
     .frat-status-box {
       border: 1px solid var(--line);
       border-radius: 16px;
@@ -1230,11 +1334,24 @@
         <button class="btn secondary" onclick="clearFratFilters()">条件クリア</button>
       </div>
 
-      <div class="card">
+            <div class="card">
         <h2 class="card-title">処理中一覧 <span id="fratTargetCount"></span></h2>
+
+        <div id="fratBulkBar" class="frat-bulk-bar">
+          <div class="frat-bulk-row">
+            <div class="frat-bulk-text">
+              選択中：<span id="fratSelectedCount">0</span>件
+            </div>
+
+            <div class="frat-actions">
+              <button class="frat-chip primary" onclick="bulkAttachSelectedFrat()">選択分を貼付済みにする</button>
+              <button class="frat-chip gray" onclick="clearFratSelection()">選択解除</button>
+            </div>
+          </div>
+        </div>
+
         <div id="fratTargetList" class="list"></div>
       </div>
-    </section>
 
     <section id="pageFratDetail" class="page">
       <div class="top-actions">
@@ -1705,6 +1822,9 @@
       fratTargets: [],
       currentFratTarget: null,
       fratHistory: [],
+      selectedFratTargetIds: [],
+
+      
 
       kitList: [],
       currentKit: null,
@@ -2593,7 +2713,7 @@
       };
     }
 
-    async function loadFratTargets() {
+        async function loadFratTargets() {
       try {
         const filters = getFratFilters();
 
@@ -2606,19 +2726,24 @@
 
         state.fratTargets = result.data || [];
 
+        state.selectedFratTargetIds = state.selectedFratTargetIds.filter(targetId => {
+          return state.fratTargets.some(item => item.targetId === targetId);
+        });
+
         renderFratTargets();
 
       } catch (error) {
         showError(error.message);
       }
     }
-
-    function renderFratTargets() {
+        function renderFratTargets() {
       const list = document.getElementById('fratTargetList');
       const count = document.getElementById('fratTargetCount');
 
       count.textContent = `（${state.fratTargets.length}件）`;
       list.innerHTML = '';
+
+      renderFratBulkBar();
 
       if (state.fratTargets.length === 0) {
         list.innerHTML = '<div class="frat-card"><div class="list-card-meta">処理中のFRAT対象はありません。</div></div>';
@@ -2645,12 +2770,21 @@
 
         grouped[building].forEach(item => {
           const card = document.createElement('div');
-          card.className = 'frat-card';
+          card.className = getFratCardClass(item);
 
           const canShip = item.fratStatus === '貼付済';
+          const checked = state.selectedFratTargetIds.includes(item.targetId) ? 'checked' : '';
 
           card.innerHTML = `
-            <div class="frat-title">${escapeHtml(item.removedSerial || '')}</div>
+            <div class="frat-select-line">
+              <input
+                type="checkbox"
+                class="frat-select-check"
+                ${checked}
+                onchange="toggleFratSelection('${escapeJs(item.targetId)}', this.checked)"
+              >
+              <div class="frat-title" style="margin-bottom:0;">${escapeHtml(item.removedSerial || '')}</div>
+            </div>
 
             <div class="frat-main">
               <div class="frat-line">
@@ -2687,17 +2821,157 @@
             </div>
 
             <div class="frat-actions">
-              <button class="btn mini blue" onclick="openFratDetail('${escapeJs(item.targetId)}')">詳細</button>
-              <button class="btn mini success" onclick="quickUpdateFratStatus('${escapeJs(item.targetId)}', '貼付済')">FRAT貼付</button>
-              <button class="btn mini warning" onclick="quickUpdateFratStatus('${escapeJs(item.targetId)}', '保留')">保留</button>
-              <button class="btn mini secondary" onclick="quickUpdateFratStatus('${escapeJs(item.targetId)}', '対象外')">対象外</button>
-              <button class="btn mini success" onclick="quickUpdateShippingStatus('${escapeJs(item.targetId)}', '出荷済')" ${canShip ? '' : 'disabled'}>${canShip ? '出荷済み' : 'FRAT後に出荷'}</button>
+              ${renderFratActionButtons(item)}
+              <button class="frat-chip gray" onclick="openFratDetail('${escapeJs(item.targetId)}')">詳細</button>
+              <button class="frat-chip ${canShip ? 'ship' : 'disabled'}" onclick="quickUpdateShippingStatus('${escapeJs(item.targetId)}', '出荷済')" ${canShip ? '' : 'disabled'}>${canShip ? '出荷済み' : 'FRAT後に出荷'}</button>
             </div>
           `;
 
           list.appendChild(card);
         });
       });
+    }
+
+        function getFratCardClass(item) {
+      const classes = ['frat-card'];
+
+      if (item.fratStatus === '貼付済') {
+        classes.push('processed');
+      }
+
+      if (item.fratStatus === '保留') {
+        classes.push('hold');
+      }
+
+      if (item.fratStatus === '対象外') {
+        classes.push('excluded');
+      }
+
+      return classes.join(' ');
+    }
+
+    function renderFratActionButtons(item) {
+      const targetId = escapeJs(item.targetId);
+      const status = item.fratStatus || '未貼付';
+
+      if (status === '貼付済') {
+        return `
+          <button class="frat-chip gray" onclick="quickUpdateFratStatus('${targetId}', '未貼付')">未貼付に戻す</button>
+          <button class="frat-chip gray" onclick="quickUpdateFratStatus('${targetId}', '保留')">保留に変更</button>
+          <button class="frat-chip gray" onclick="quickUpdateFratStatus('${targetId}', '対象外')">対象外に変更</button>
+        `;
+      }
+
+      if (status === '保留') {
+        return `
+          <button class="frat-chip gray" onclick="quickUpdateFratStatus('${targetId}', '貼付済')">貼付済に変更</button>
+          <button class="frat-chip gray" onclick="quickUpdateFratStatus('${targetId}', '未貼付')">保留解除</button>
+          <button class="frat-chip gray" onclick="quickUpdateFratStatus('${targetId}', '対象外')">対象外に変更</button>
+        `;
+      }
+
+      if (status === '対象外') {
+        return `
+          <button class="frat-chip gray" onclick="quickUpdateFratStatus('${targetId}', '貼付済')">貼付済に変更</button>
+          <button class="frat-chip gray" onclick="quickUpdateFratStatus('${targetId}', '保留')">保留に変更</button>
+          <button class="frat-chip gray" onclick="quickUpdateFratStatus('${targetId}', '未貼付')">対象に戻す</button>
+        `;
+      }
+
+      return `
+        <button class="frat-chip primary" onclick="quickUpdateFratStatus('${targetId}', '貼付済')">FRAT貼付</button>
+        <button class="frat-chip hold" onclick="quickUpdateFratStatus('${targetId}', '保留')">保留</button>
+        <button class="frat-chip gray" onclick="quickUpdateFratStatus('${targetId}', '対象外')">対象外</button>
+      `;
+    }
+
+    function toggleFratSelection(targetId, checked) {
+      if (checked) {
+        if (!state.selectedFratTargetIds.includes(targetId)) {
+          state.selectedFratTargetIds.push(targetId);
+        }
+      } else {
+        state.selectedFratTargetIds = state.selectedFratTargetIds.filter(id => id !== targetId);
+      }
+
+      renderFratBulkBar();
+    }
+
+    function renderFratBulkBar() {
+      const bar = document.getElementById('fratBulkBar');
+      const count = document.getElementById('fratSelectedCount');
+
+      if (!bar || !count) return;
+
+      count.textContent = String(state.selectedFratTargetIds.length);
+
+      if (state.selectedFratTargetIds.length > 0) {
+        bar.classList.add('show');
+      } else {
+        bar.classList.remove('show');
+      }
+    }
+
+    function clearFratSelection(shouldRender = true) {
+      state.selectedFratTargetIds = [];
+
+      if (shouldRender) {
+        renderFratTargets();
+      } else {
+        renderFratBulkBar();
+      }
+    }
+
+    function updateFratTargetLocally(updatedItem) {
+      const index = state.fratTargets.findIndex(item => item.targetId === updatedItem.targetId);
+
+      if (index !== -1) {
+        state.fratTargets[index] = updatedItem;
+      }
+
+      if (state.currentFratTarget && state.currentFratTarget.targetId === updatedItem.targetId) {
+        state.currentFratTarget = updatedItem;
+      }
+    }
+
+    function updateFratTargetsLocally(updatedItems) {
+      (updatedItems || []).forEach(item => {
+        updateFratTargetLocally(item);
+      });
+    }
+
+    function removeFratTargetLocally(targetId) {
+      state.fratTargets = state.fratTargets.filter(item => item.targetId !== targetId);
+      state.selectedFratTargetIds = state.selectedFratTargetIds.filter(id => id !== targetId);
+    }
+
+    async function bulkAttachSelectedFrat() {
+      if (state.selectedFratTargetIds.length === 0) {
+        showError('一括処理する対象を選択してください。');
+        return;
+      }
+
+      const ok = confirm(`選択中の${state.selectedFratTargetIds.length}件をFRAT貼付済みにします。実行しますか？`);
+
+      if (!ok) return;
+
+      try {
+        const result = await apiRequest('updateFratStatusBulk', {
+          targetIds: state.selectedFratTargetIds,
+          fratStatus: '貼付済'
+        });
+
+        updateFratTargetsLocally(result.data || []);
+
+        state.selectedFratTargetIds = [];
+
+        renderFratTargets();
+
+        showSuccess(result.message || '一括でFRAT貼付済みにしました。');
+
+      } catch (error) {
+        showError(error.message);
+      }
     }
 
     async function openFratDetail(targetId) {
@@ -2765,17 +3039,22 @@
       `;
     }
 
-    async function quickUpdateFratStatus(targetId, fratStatus) {
+        async function quickUpdateFratStatus(targetId, fratStatus) {
       try {
-        await apiRequest('updateFratStatus', { targetId, fratStatus });
+        const result = await apiRequest('updateFratStatus', { targetId, fratStatus });
+
+        updateFratTargetLocally(result.data);
+
+        renderFratTargets();
+
         showSuccess(`FRAT状態を「${fratStatus}」に変更しました。`);
-        await loadFratTargets();
+
       } catch (error) {
         showError(error.message);
       }
     }
 
-    async function quickUpdateShippingStatus(targetId, shippingStatus) {
+        async function quickUpdateShippingStatus(targetId, shippingStatus) {
       if (shippingStatus === '出荷済') {
         const target = state.fratTargets.find(item => String(item.targetId) === String(targetId));
 
@@ -2789,15 +3068,24 @@
       }
 
       try {
-        await apiRequest('updateFratShippingStatus', { targetId, shippingStatus });
+        const result = await apiRequest('updateFratShippingStatus', { targetId, shippingStatus });
+
+        if (result.movedToHistory) {
+          removeFratTargetLocally(targetId);
+        } else {
+          updateFratTargetLocally(result.data);
+        }
+
+        renderFratTargets();
+
         showSuccess(`出荷状態を「${shippingStatus}」に変更しました。`);
-        await loadFratTargets();
+
       } catch (error) {
         showError(error.message);
       }
     }
 
-    async function saveCurrentFratStatus() {
+        async function saveCurrentFratStatus() {
       if (!state.currentFratTarget) {
         showError('対象データがありません。');
         return;
@@ -2812,6 +3100,8 @@
         });
 
         state.currentFratTarget = result.data;
+        updateFratTargetLocally(result.data);
+
         renderFratDetail();
         showSuccess('FRAT状態を保存しました。');
 
@@ -2820,7 +3110,7 @@
       }
     }
 
-    async function saveCurrentShippingStatus() {
+       async function saveCurrentShippingStatus() {
       if (!state.currentFratTarget) {
         showError('対象データがありません。');
         return;
@@ -2847,11 +3137,13 @@
         showSuccess('出荷状態を保存しました。');
 
         if (result.movedToHistory) {
+          removeFratTargetLocally(state.currentFratTarget.targetId);
           state.currentFratTarget = null;
-          await loadFratTargets();
           showPage('pageFrat');
+          renderFratTargets();
         } else {
           state.currentFratTarget = result.data;
+          updateFratTargetLocally(result.data);
           renderFratDetail();
         }
 
@@ -2882,11 +3174,11 @@
 
         showSuccess('処理中一覧から除外しました。');
 
+                removeFratTargetLocally(state.currentFratTarget.targetId);
         state.currentFratTarget = null;
 
-        await loadFratTargets();
         showPage('pageFrat');
-
+        renderFratTargets();
       } catch (error) {
         showError(error.message);
       }
@@ -2955,7 +3247,7 @@
       }
     }
 
-    function clearFratFilters() {
+       function clearFratFilters() {
       document.getElementById('fratFilterMachineType').value = '';
       document.getElementById('fratFilterBuilding').value = '';
       document.getElementById('fratFilterFratStatus').value = '';
@@ -2964,6 +3256,7 @@
       document.getElementById('fratFilterDateTo').value = '';
       document.getElementById('fratFilterKeyword').value = '';
 
+      clearFratSelection(false);
       loadFratTargets();
     }
 
