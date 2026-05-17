@@ -613,6 +613,50 @@
       border-color: #e5e7eb;
     }
 
+
+    .import-status-card {
+      border: 1px solid #bfdbfe;
+      background: #eff6ff;
+    }
+
+    .import-status-title {
+      font-size: 15px;
+      font-weight: 900;
+      color: #1e3a8a;
+      margin: 0 0 8px;
+    }
+
+    .import-status-line {
+      font-size: 13px;
+      color: #1f2937;
+      line-height: 1.6;
+      margin-top: 4px;
+    }
+
+    .import-status-line strong {
+      color: #111827;
+    }
+
+    .import-status-message {
+      font-size: 12px;
+      color: #4b5563;
+      line-height: 1.5;
+      margin-top: 8px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .import-status-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .import-status-actions .btn {
+      margin-top: 0;
+    }
+
     
     .frat-status-box {
       border: 1px solid var(--line);
@@ -1011,6 +1055,10 @@
         width: 100%;
       }
 
+      .import-status-actions .btn {
+        width: 100%;
+      }
+
       .maintenance-pager {
         flex-direction: column;
       }
@@ -1219,6 +1267,16 @@
         <button class="btn small secondary" onclick="showPage('pageHome')">← ホーム</button>
       </div>
 
+      <div class="card import-status-card">
+        <p class="import-status-title">次回メンテマスタ 最新情報</p>
+        <div id="maintenanceImportStatus" class="import-status-line">前回更新日時：確認中...</div>
+        <div id="maintenanceImportMessage" class="import-status-message"></div>
+        <div class="import-status-actions">
+          <button class="btn small blue" onclick="runMaintenanceImportNow()">最新情報取得</button>
+          <button class="btn small secondary" onclick="loadImportStatus()">更新日時だけ再確認</button>
+        </div>
+      </div>
+
       <div class="card">
         <h2 class="card-title">次回メンテ検索</h2>
 
@@ -1290,6 +1348,16 @@
         <button class="btn small secondary" onclick="openFratHistoryPage()">出荷済み履歴</button>
       </div>
 
+      <div class="card import-status-card">
+        <p class="import-status-title">FRAT/Blackoutメール 最新情報</p>
+        <div id="fratImportStatus" class="import-status-line">前回更新日時：確認中...</div>
+        <div id="fratImportMessage" class="import-status-message"></div>
+        <div class="import-status-actions">
+          <button class="btn small blue" onclick="runFratImportNow()">最新情報取得</button>
+          <button class="btn small secondary" onclick="loadImportStatus()">更新日時だけ再確認</button>
+        </div>
+      </div>
+
       <div class="card">
         <h2 class="card-title">FRAT・出荷管理</h2>
 
@@ -1350,7 +1418,7 @@
           </div>
         </div>
 
-               <div id="fratTargetList" class="list"></div>
+        <div id="fratTargetList" class="list"></div>
       </div>
     </section>
 
@@ -1741,6 +1809,16 @@
         </div>
       </div>
 
+        <div class="card import-status-card">
+          <p class="import-status-title">TKMシフトCSV 最新情報</p>
+          <div id="shiftImportStatus" class="import-status-line">前回更新日時：確認中...</div>
+          <div id="shiftImportMessage" class="import-status-message"></div>
+          <div class="import-status-actions">
+            <button class="btn small blue" onclick="runShiftImportNow()">最新情報取得</button>
+            <button class="btn small secondary" onclick="loadImportStatus()">更新日時だけ再確認</button>
+          </div>
+        </div>
+
       <div class="card">
         <h2 class="card-title" id="shiftMonthTitle">シフト表</h2>
 
@@ -1824,6 +1902,7 @@
       currentFratTarget: null,
       fratHistory: [],
       selectedFratTargetIds: [],
+      importStatus: [],
 
       
 
@@ -2010,8 +2089,10 @@
       renderSelectOptions();
       renderFratSelectOptions();
       renderKitSelectOptions();
-    }
 
+      await loadImportStatus();
+    }
+\n\n    async function loadImportStatus() {\n      try {\n        const result = await apiRequest('getImportStatus');\n\n        state.importStatus = result.data || [];\n\n        renderImportStatusPanels();\n\n      } catch (error) {\n        console.warn(error);\n        renderImportStatusError(error.message);\n      }\n    }\n\n    function renderImportStatusPanels() {\n      renderImportStatusPanel('frat_blackout', 'fratImportStatus', 'fratImportMessage');\n      renderImportStatusPanel('maintenance_master', 'maintenanceImportStatus', 'maintenanceImportMessage');\n      renderImportStatusPanel('shift_csv', 'shiftImportStatus', 'shiftImportMessage');\n    }\n\n    function renderImportStatusError(message) {\n      const ids = [\n        'fratImportStatus',\n        'maintenanceImportStatus',\n        'shiftImportStatus'\n      ];\n\n      ids.forEach(id => {\n        const element = document.getElementById(id);\n\n        if (element) {\n          element.textContent = '前回更新日時：取得できませんでした';\n        }\n      });\n\n      const messageIds = [\n        'fratImportMessage',\n        'maintenanceImportMessage',\n        'shiftImportMessage'\n      ];\n\n      messageIds.forEach(id => {\n        const element = document.getElementById(id);\n\n        if (element) {\n          element.textContent = message || '';\n        }\n      });\n    }\n\n    function renderImportStatusPanel(importKey, statusElementId, messageElementId) {\n      const statusElement = document.getElementById(statusElementId);\n      const messageElement = document.getElementById(messageElementId);\n\n      if (!statusElement || !messageElement) {\n        return;\n      }\n\n      const status = getImportStatusByKey(importKey);\n\n      if (!status) {\n        statusElement.textContent = '前回更新日時：未実行';\n        messageElement.textContent = '';\n        return;\n      }\n\n      const lastSuccessAt = status.lastSuccessAt || '';\n      const lastRunAt = status.lastRunAt || '';\n      const lastStatus = status.lastStatus || '未実行';\n      const displayDate = lastSuccessAt || lastRunAt || '';\n\n      statusElement.innerHTML = `\n        前回更新日時：<strong>${escapeHtml(formatDateTimeJapanese(displayDate) || '未実行')}</strong><br>\n        状態：<strong>${escapeHtml(lastStatus)}</strong>\n        ${status.updatedByUserName ? `<br>実行者：<strong>${escapeHtml(status.updatedByUserName)}</strong>` : ''}\n      `;\n\n      messageElement.textContent = status.lastMessage || '';\n    }\n\n    function getImportStatusByKey(importKey) {\n      return (state.importStatus || []).find(item => String(item.importKey || '') === String(importKey || '')) || null;\n    }\n\n    async function runFratImportNow() {\n      const ok = confirm('FRAT/Blackoutメールの最新情報を取得します。実行しますか？');\n\n      if (!ok) return;\n\n      try {\n        showInfo('FRAT/Blackoutメールの最新情報を取得中です...');\n\n        const result = await apiRequest('runFratImportNow');\n\n        await loadImportStatus();\n        await loadFratTargets();\n\n        const summary = makeImportResultSummary(result.data && result.data.result);\n        showSuccess((result.message || 'FRAT/Blackout取込が完了しました。') + summary);\n\n      } catch (error) {\n        await loadImportStatus();\n        showError(error.message);\n      }\n    }\n\n    async function runMaintenanceImportNow() {\n      const ok = confirm('次回メンテマスタの最新情報を取得します。実行しますか？');\n\n      if (!ok) return;\n\n      try {\n        showInfo('次回メンテマスタの最新情報を取得中です...');\n\n        const result = await apiRequest('runMaintenanceImportNow');\n\n        await loadImportStatus();\n\n        const filters = getMaintenanceFilters();\n        if (hasMaintenanceSearchCondition(filters)) {\n          await searchMaintenanceList(state.maintenanceCurrentPage || 1);\n        }\n\n        const summary = makeImportResultSummary(result.data && result.data.result);\n        showSuccess((result.message || '次回メンテマスタ取込が完了しました。') + summary);\n\n      } catch (error) {\n        await loadImportStatus();\n        showError(error.message);\n      }\n    }\n\n    async function runShiftImportNow() {\n      const ok = confirm('TKMシフトCSVの最新情報を取得します。実行しますか？');\n\n      if (!ok) return;\n\n      try {\n        showInfo('TKMシフトCSVの最新情報を取得中です...');\n\n        const result = await apiRequest('runShiftImportNow');\n\n        await loadImportStatus();\n        await loadShiftCalendar();\n\n        const summary = makeImportResultSummary(result.data && result.data.result);\n        showSuccess((result.message || 'TKMシフトCSV取込が完了しました。') + summary);\n\n      } catch (error) {\n        await loadImportStatus();\n        showError(error.message);\n      }\n    }\n\n    function makeImportResultSummary(result) {\n      if (!result) {\n        return '';\n      }\n\n      const keys = [\n        ['candidateCount', '候補'],\n        ['selectedCount', '採用'],\n        ['addedCount', '追加'],\n        ['updatedCount', '更新'],\n        ['removedCount', '削除'],\n        ['errorCount', 'エラー']\n      ];\n\n      const parts = [];\n\n      keys.forEach(pair => {\n        const key = pair[0];\n        const label = pair[1];\n\n        if (result[key] !== undefined && result[key] !== '') {\n          parts.push(`${label}:${result[key]}`);\n        }\n      });\n\n      return parts.length > 0 ? `（${parts.join(' / ')}）` : '';\n    }\n\n    function formatDateTimeJapanese(value) {\n      if (!value) return '';\n\n      const text = String(value);\n      const match = text.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})\s+(\d{1,2}):(\d{1,2}):(\d{1,2})/);\n\n      if (match) {\n        return `${match[1]}年${String(match[2]).padStart(2, '0')}月${String(match[3]).padStart(2, '0')}日 ${String(match[4]).padStart(2, '0')}時${String(match[5]).padStart(2, '0')}分${String(match[6]).padStart(2, '0')}秒`;\n      }\n\n      return text;\n    }\n
     function renderSelectOptions() {
       renderBuildingSelect('filterBuilding', true);
       renderBuildingSelect('formBuilding', false);
@@ -2476,6 +2557,7 @@
 
     async function openMaintenancePage() {
       showPage('pageMaintenance');
+      await loadImportStatus();
 
       if (state.maintenanceList.length === 0 && state.maintenanceTotalCount === 0) {
         renderMaintenanceInitialMessage();
@@ -2696,6 +2778,7 @@
 
     async function openFratPage() {
       showPage('pageFrat');
+      await loadImportStatus();
 
       if (state.fratTargets.length === 0) {
         await loadFratTargets();
@@ -3695,6 +3778,7 @@
 
     async function openShiftPage() {
       showPage('pageShift');
+      await loadImportStatus();
       await loadShiftCalendar();
     }
 
