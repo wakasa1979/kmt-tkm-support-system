@@ -2277,17 +2277,103 @@
     }
 
     function formatDateTimeJapanese(value) {
-      if (!value) return '';
+  if (!value) return '未実行';
 
-      const text = String(value);
-      const match = text.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})\s+(\d{1,2}):(\d{1,2}):(\d{1,2})/);
+  const text = String(value).trim();
 
-      if (match) {
-        return `${match[1]}年${String(match[2]).padStart(2, '0')}月${String(match[3]).padStart(2, '0')}日 ${String(match[4]).padStart(2, '0')}時${String(match[5]).padStart(2, '0')}分${String(match[6]).padStart(2, '0')}秒`;
-      }
+  if (!text) return '未実行';
 
-      return text;
+  if (text === '未実行' || text === '取得できませんでした') {
+    return text;
+  }
+
+  // すでに日本語表示ならそのまま
+  if (/^\d{4}年\d{1,2}月\d{1,2}日/.test(text)) {
+    return text;
+  }
+
+  // yyyy/MM/dd HH:mm:ss 形式
+  if (/^\d{4}\/\d{1,2}\/\d{1,2}\s+\d{1,2}:\d{1,2}/.test(text)) {
+    const match = text.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?/);
+
+    if (match) {
+      return makeJapaneseDateTimeText(
+        match[1],
+        match[2],
+        match[3],
+        match[4],
+        match[5],
+        match[6] || '00'
+      );
     }
+  }
+
+  // yyyy-MM-dd HH:mm:ss 形式
+  if (/^\d{4}-\d{1,2}-\d{1,2}\s+\d{1,2}:\d{1,2}/.test(text)) {
+    const match = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?/);
+
+    if (match) {
+      return makeJapaneseDateTimeText(
+        match[1],
+        match[2],
+        match[3],
+        match[4],
+        match[5],
+        match[6] || '00'
+      );
+    }
+  }
+
+  // 2026-05-17T23:30:43.000Z 形式は日本時間へ変換
+  if (/^\d{4}-\d{2}-\d{2}T/.test(text)) {
+    const date = new Date(text);
+
+    if (!isNaN(date.getTime())) {
+      return formatDateObjectAsJstText(date);
+    }
+  }
+
+  const parsed = new Date(text);
+
+  if (!isNaN(parsed.getTime()) && /GMT|UTC|Z|T/.test(text)) {
+    return formatDateObjectAsJstText(parsed);
+  }
+
+  return text;
+}
+
+function formatDateObjectAsJstText(date) {
+  const formatter = new Intl.DateTimeFormat('ja-JP', {
+    timeZone: 'Asia/Tokyo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  });
+
+  const parts = formatter.formatToParts(date);
+  const map = {};
+
+  parts.forEach(part => {
+    map[part.type] = part.value;
+  });
+
+  return makeJapaneseDateTimeText(
+    map.year,
+    map.month,
+    map.day,
+    map.hour,
+    map.minute,
+    map.second
+  );
+}
+
+function makeJapaneseDateTimeText(year, month, day, hour, minute, second) {
+  return `${String(year).padStart(4, '0')}年${String(month).padStart(2, '0')}月${String(day).padStart(2, '0')}日 ${String(hour).padStart(2, '0')}時${String(minute).padStart(2, '0')}分${String(second).padStart(2, '0')}秒`;
+}
 
     function renderSelectOptions() {
       renderBuildingSelect('filterBuilding', true);
@@ -2524,11 +2610,13 @@
       `;
     }
 
-    function detailRow(label, value) {
+        function detailRow(label, value) {
+      const displayValue = formatValueForDisplay(value);
+
       return `
         <div class="detail-row">
           <div class="detail-label">${escapeHtml(label)}</div>
-          <div class="detail-value">${escapeHtml(value || '未入力')}</div>
+          <div class="detail-value">${escapeHtml(displayValue || '未入力')}</div>
         </div>
       `;
     }
@@ -3962,7 +4050,7 @@
 
         card.innerHTML = `
           <strong>${escapeHtml(log.action || '')}</strong>
-          <div>${escapeHtml(log.timestamp || '')}</div>
+                    <div>${escapeHtml(formatDateTimeForDisplay(log.timestamp || ''))}</div>
           <div>操作者：${escapeHtml(log.userName || '')} / ${escapeHtml(log.userId || '')}</div>
           <div>対象：${escapeHtml(log.targetType || '')} / ${escapeHtml(log.targetId || '')}</div>
           <div>${escapeHtml(log.detail || '')}</div>
@@ -4532,6 +4620,119 @@
       return `${y}-${m}-${d}`;
     }
 
+    function formatDateTimeForDisplay(value) {
+      if (!value) return '';
+
+      const text = String(value).trim();
+
+      if (!text) return '';
+
+      if (text === '未実行' || text === '取得できませんでした') {
+        return text;
+      }
+
+      if (/^\d{4}年\d{1,2}月\d{1,2}日/.test(text)) {
+        return text;
+      }
+
+      if (/^\d{4}\/\d{1,2}\/\d{1,2}\s+\d{1,2}:\d{1,2}/.test(text)) {
+        const match = text.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?/);
+
+        if (match) {
+          return makeJapaneseDateTimeText_(
+            match[1],
+            match[2],
+            match[3],
+            match[4],
+            match[5],
+            match[6] || '00'
+          );
+        }
+      }
+
+      if (/^\d{4}-\d{1,2}-\d{1,2}\s+\d{1,2}:\d{1,2}/.test(text)) {
+        const match = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?/);
+
+        if (match) {
+          return makeJapaneseDateTimeText_(
+            match[1],
+            match[2],
+            match[3],
+            match[4],
+            match[5],
+            match[6] || '00'
+          );
+        }
+      }
+
+      if (/^\d{4}-\d{2}-\d{2}T/.test(text)) {
+        const date = new Date(text);
+
+        if (!isNaN(date.getTime())) {
+          return formatDateObjectAsJstText_(date);
+        }
+      }
+
+      const parsed = new Date(text);
+
+      if (!isNaN(parsed.getTime()) && /GMT|UTC|Z|T/.test(text)) {
+        return formatDateObjectAsJstText_(parsed);
+      }
+
+      return text;
+    }
+
+    function formatDateObjectAsJstText_(date) {
+      const formatter = new Intl.DateTimeFormat('ja-JP', {
+        timeZone: 'Asia/Tokyo',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      });
+
+      const parts = formatter.formatToParts(date);
+      const map = {};
+
+      parts.forEach(part => {
+        map[part.type] = part.value;
+      });
+
+      return makeJapaneseDateTimeText_(
+        map.year,
+        map.month,
+        map.day,
+        map.hour,
+        map.minute,
+        map.second
+      );
+    }
+
+    function makeJapaneseDateTimeText_(year, month, day, hour, minute, second) {
+      return `${String(year).padStart(4, '0')}年${String(month).padStart(2, '0')}月${String(day).padStart(2, '0')}日 ${String(hour).padStart(2, '0')}時${String(minute).padStart(2, '0')}分${String(second).padStart(2, '0')}秒`;
+    }
+
+    function formatValueForDisplay(value) {
+      if (!value) return '';
+
+      const text = String(value).trim();
+
+      if (
+        /^\d{4}-\d{2}-\d{2}T/.test(text) ||
+        /^\d{4}\/\d{1,2}\/\d{1,2}\s+\d{1,2}:\d{1,2}/.test(text) ||
+        /^\d{4}-\d{1,2}-\d{1,2}\s+\d{1,2}:\d{1,2}/.test(text)
+      ) {
+        return formatDateTimeForDisplay(text);
+      }
+
+      return text;
+    }
+
+
+    
     function formatDateForDisplay(value) {
       if (!value) return '';
 
