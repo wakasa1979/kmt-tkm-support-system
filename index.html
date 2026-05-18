@@ -443,6 +443,63 @@
       background: #f0fdf4;
     }
 
+
+    .parts-card {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fff;
+      padding: 14px;
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+    }
+
+    .parts-title {
+      font-size: 16px;
+      font-weight: 900;
+      margin-bottom: 8px;
+      word-break: break-word;
+    }
+
+    .parts-main {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    .parts-line {
+      display: flex;
+      gap: 6px;
+      line-height: 1.5;
+    }
+
+    .parts-line-label {
+      color: var(--muted);
+      min-width: 84px;
+      font-weight: 700;
+    }
+
+    .parts-line-value {
+      font-weight: 800;
+      word-break: break-word;
+    }
+
+    .parts-pending-card {
+      border: 1px solid #bfdbfe;
+      background: #eff6ff;
+      border-radius: 16px;
+      padding: 14px;
+    }
+
+    .parts-pending-card.error {
+      border-color: #fecaca;
+      background: #fff7f7;
+    }
+
+    .parts-pending-card.ready {
+      border-color: #86efac;
+      background: #f0fdf4;
+    }    
     .exchange-card.warning {
       border-color: #fcd34d;
       background: #fffbeb;
@@ -1249,9 +1306,9 @@
             <span>登録・更新・削除などの操作履歴を確認します。</span>
           </button>
 
-          <button class="menu-button disabled" onclick="showInfo('在庫管理は次回以降に追加予定です。')">
-            <strong>在庫管理</strong>
-            <span>準備中</span>
+          <button class="menu-button" onclick="openPartsInventoryPage()">
+            <strong>パーツ在庫管理</strong>
+            <span>入荷パーツをP/N・S/Nで登録し、在庫一覧を検索します。</span>
           </button>
         </div>
       </div>
@@ -1968,7 +2025,139 @@
       </div>
     </section>
 
-    <section id="pageLog" class="page">
+        <section id="pagePartsInventory" class="page">
+      <div class="top-actions">
+        <button class="btn small secondary" onclick="showPage('pageHome')">← ホーム</button>
+        <button class="btn small success" onclick="openPartsInventoryRegisterPage()">入荷パーツ登録</button>
+        <button class="btn small blue" onclick="searchPartsInventory()">在庫一覧更新</button>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">パーツ在庫管理</h2>
+
+        <p class="list-card-meta">
+          入荷したパーツ/KITをP/N・S/Nで管理します。まずは入荷品置き場のパーツを読み取り、在庫一覧へ登録します。
+        </p>
+
+        <div class="filter-grid">
+          <div>
+            <label class="label" for="partsInventoryFilterBuilding">建屋</label>
+            <select id="partsInventoryFilterBuilding" class="select">
+              <option value="">すべて</option>
+              <option value="Y2">Y2</option>
+              <option value="Y3">Y3</option>
+              <option value="Y4">Y4</option>
+              <option value="Y5">Y5</option>
+              <option value="Y6">Y6</option>
+              <option value="Y7">Y7</option>
+              <option value="未判定">未判定</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="label" for="partsInventoryFilterStatus">状態</label>
+            <select id="partsInventoryFilterStatus" class="select">
+              <option value="">すべて</option>
+              <option value="在庫">在庫</option>
+              <option value="使用予定">使用予定</option>
+              <option value="使用済み">使用済み</option>
+              <option value="出庫済み">出庫済み</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="label" for="partsInventoryFilterPartNumber">P/N</label>
+            <input id="partsInventoryFilterPartNumber" class="input" type="text" placeholder="例：0247-08750W" />
+          </div>
+
+          <div>
+            <label class="label" for="partsInventoryFilterSerialNumber">S/N</label>
+            <input id="partsInventoryFilterSerialNumber" class="input" type="text" placeholder="例：YCLWOMP-026C" />
+          </div>
+
+          <div class="full">
+            <label class="label" for="partsInventoryFilterKeyword">キーワード</label>
+            <input id="partsInventoryFilterKeyword" class="input" type="text" placeholder="P/N / S/N / 場所 / 登録者など" />
+          </div>
+        </div>
+
+        <button class="btn blue" onclick="searchPartsInventory()">検索</button>
+        <button class="btn secondary" onclick="clearPartsInventoryFilters()">条件クリア</button>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">在庫一覧 <span id="partsInventoryCount"></span></h2>
+        <div id="partsInventoryList" class="list"></div>
+      </div>
+    </section>
+
+    <section id="pagePartsInventoryRegister" class="page">
+      <div class="top-actions">
+        <button class="btn small secondary" onclick="showPage('pagePartsInventory')">← 在庫一覧へ</button>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">入荷パーツ登録</h2>
+
+        <p class="list-card-meta">
+          Datamatrixの場合はP/NとS/Nを同時抽出します。1Dバーコードの場合は必ずP/N → S/Nの順で読み取ります。
+        </p>
+
+        <div class="form-grid">
+          <div>
+            <label class="label" for="partsRegisterBuilding">登録建屋</label>
+            <select id="partsRegisterBuilding" class="select">
+              <option value="">選択してください</option>
+              <option value="Y2">Y2</option>
+              <option value="Y3">Y3</option>
+              <option value="Y4">Y4</option>
+              <option value="Y5">Y5</option>
+              <option value="Y6">Y6</option>
+              <option value="Y7">Y7</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="label" for="partsRegisterLocationText">登録場所</label>
+            <input id="partsRegisterLocationText" class="input" type="text" value="入荷品置き場" />
+          </div>
+
+          <div class="full">
+            <label class="label" for="partsScanText">読取文字列</label>
+            <textarea id="partsScanText" class="textarea" placeholder="Datamatrix / バーコード / OCR文字列を貼り付け"></textarea>
+          </div>
+
+          <div>
+            <label class="label" for="partsScanMethod">読取方法</label>
+            <select id="partsScanMethod" class="select">
+              <option value="AUTO">自動判定</option>
+              <option value="DATAMATRIX">Datamatrix</option>
+              <option value="BARCODE">バーコード</option>
+              <option value="OCR">OCR</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="label">1D読取状態</label>
+            <div class="frat-status-box">
+              <div id="partsScanModeText" class="list-card-meta">P/N読取待ち</div>
+              <div id="partsCurrentPnText" class="list-card-meta"></div>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn blue" onclick="parsePartsInventoryScanText()">読取文字列を解析</button>
+        <button class="btn secondary" onclick="resetPartsScanPair()">P/N・S/Nペア読取をリセット</button>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">登録予定一覧 <span id="partsPendingCount"></span></h2>
+        <div id="partsPendingList" class="list"></div>
+
+        <button class="btn success" onclick="registerPartsInventoryBatch()">登録予定をまとめて登録</button>
+        <button class="btn secondary" onclick="clearPartsPendingItems()">登録予定を全削除</button>
+      </div>
+    </section>    <section id="pageLog" class="page">
       <div class="top-actions">
         <button class="btn small secondary" onclick="showPage('pageHome')">← ホーム</button>
       </div>
@@ -2044,8 +2233,13 @@
       currentKit: null,
       kitEvents: [],
 
-      mesaKitExchangeCandidates: [],
-　　　　selectedMesaExchangeCandidateIds: []
+            mesaKitExchangeCandidates: [],
+      selectedMesaExchangeCandidateIds: [],
+
+      partsInventoryList: [],
+      partsInventoryPendingItems: [],
+      currentPartsScanMode: 'WAIT_PART_NUMBER',
+      currentPendingPartNumber: ''
     };
 
     window.addEventListener('load', async () => {
@@ -4617,7 +4811,445 @@ function formatTraceabilityDate(value) {
 
   return text;
 }
+    async function openPartsInventoryPage() {
+      showPage('pagePartsInventory');
 
+      if (state.partsInventoryList.length === 0) {
+        await searchPartsInventory();
+      }
+    }
+
+    function openPartsInventoryRegisterPage() {
+      showPage('pagePartsInventoryRegister');
+      updatePartsScanModeText();
+      renderPartsPendingItems();
+    }
+
+    function getPartsInventoryFilters() {
+      return {
+        building: document.getElementById('partsInventoryFilterBuilding').value,
+        currentStatus: document.getElementById('partsInventoryFilterStatus').value,
+        partNumber: document.getElementById('partsInventoryFilterPartNumber').value.trim(),
+        serialNumber: document.getElementById('partsInventoryFilterSerialNumber').value.trim(),
+        keyword: document.getElementById('partsInventoryFilterKeyword').value.trim()
+      };
+    }
+
+    async function searchPartsInventory() {
+      try {
+        const result = await apiRequest('searchPartsInventory', {
+          filters: getPartsInventoryFilters()
+        });
+
+        state.partsInventoryList = result.data || [];
+
+        renderPartsInventoryList();
+
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    function clearPartsInventoryFilters() {
+      document.getElementById('partsInventoryFilterBuilding').value = '';
+      document.getElementById('partsInventoryFilterStatus').value = '';
+      document.getElementById('partsInventoryFilterPartNumber').value = '';
+      document.getElementById('partsInventoryFilterSerialNumber').value = '';
+      document.getElementById('partsInventoryFilterKeyword').value = '';
+
+      searchPartsInventory();
+    }
+
+    function renderPartsInventoryList() {
+      const list = document.getElementById('partsInventoryList');
+      const count = document.getElementById('partsInventoryCount');
+
+      count.textContent = `（${state.partsInventoryList.length}件）`;
+      list.innerHTML = '';
+
+      if (state.partsInventoryList.length === 0) {
+        list.innerHTML = '<div class="parts-card"><div class="list-card-meta">在庫データはありません。</div></div>';
+        return;
+      }
+
+      state.partsInventoryList.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'parts-card';
+
+        card.innerHTML = `
+          <div class="parts-title">${escapeHtml(item.serialNumber || '')}</div>
+
+          <div class="parts-main">
+            <div class="parts-line">
+              <span class="parts-line-label">P/N</span>
+              <span class="parts-line-value">${escapeHtml(item.partNumber || '')}</span>
+            </div>
+
+            <div class="parts-line">
+              <span class="parts-line-label">状態</span>
+              <span class="parts-line-value">${escapeHtml(item.currentStatus || '')}</span>
+            </div>
+
+            <div class="parts-line">
+              <span class="parts-line-label">建屋</span>
+              <span class="parts-line-value">${escapeHtml(item.currentBuilding || '')}</span>
+            </div>
+
+            <div class="parts-line">
+              <span class="parts-line-label">場所</span>
+              <span class="parts-line-value">${escapeHtml(item.currentLocationText || item.currentKariokiName || '')}</span>
+            </div>
+
+            <div class="parts-line">
+              <span class="parts-line-label">登録日</span>
+              <span class="parts-line-value">${escapeHtml(item.receivedDateText || item.receivedDate || '')}</span>
+            </div>
+
+            <div class="parts-line">
+              <span class="parts-line-label">登録者</span>
+              <span class="parts-line-value">${escapeHtml(item.receivedByUserName || '')}</span>
+            </div>
+          </div>
+
+          <div class="badge-row">
+            ${badge(item.itemType || 'PART', 'blue')}
+            ${badge(item.sourceCodeType || item.scanMethod || 'SCAN', 'gray')}
+          </div>
+        `;
+
+        list.appendChild(card);
+      });
+    }
+
+    async function parsePartsInventoryScanText() {
+      const rawText = document.getElementById('partsScanText').value.trim();
+      const scanMethod = document.getElementById('partsScanMethod').value;
+
+      if (!rawText) {
+        showError('読取文字列を入力してください。');
+        return;
+      }
+
+      try {
+        const result = await apiRequest('parsePartsInventoryScanText', {
+          rawText,
+          scanMethod
+        });
+
+        const parsed = result.data || {};
+
+        handlePartsParsedResult(parsed);
+
+        document.getElementById('partsScanText').value = '';
+
+      } catch (error) {
+        vibrateError();
+        showError(error.message);
+      }
+    }
+
+    function handlePartsParsedResult(parsed) {
+      const partNumber = parsed.partNumber || '';
+      const serialNumber = parsed.serialNumber || '';
+      const sourceCodeType = parsed.sourceCodeType || '';
+      const scanMethod = parsed.scanMethod || 'AUTO';
+      const rawText = parsed.rawText || '';
+
+      if (sourceCodeType === 'DATAMATRIX') {
+        if (partNumber && serialNumber) {
+          addPartsPendingItem({
+            partNumber,
+            serialNumber,
+            rawScanText: rawText,
+            scanMethod,
+            sourceCodeType
+          });
+
+          vibrateSuccess();
+          showSuccess('DatamatrixからP/N・S/Nを追加しました。');
+          return;
+        }
+
+        vibrateError();
+        showError(parsed.parseMessage || 'DatamatrixからP/N・S/Nを取得できませんでした。');
+        return;
+      }
+
+      // 1Dバーコード/OCR：P/N → S/N の順番を強制
+      if (state.currentPartsScanMode === 'WAIT_PART_NUMBER') {
+        if (partNumber && !serialNumber) {
+          state.currentPendingPartNumber = partNumber;
+          state.currentPartsScanMode = 'WAIT_SERIAL_NUMBER';
+          updatePartsScanModeText();
+          vibrateSuccess();
+          showSuccess('P/Nを読み取りました。次にS/Nを読み取ってください。');
+          return;
+        }
+
+        if (serialNumber && !partNumber) {
+          vibrateError();
+          showError('先にP/Nを読み取ってください。');
+          return;
+        }
+
+        if (partNumber && serialNumber) {
+          addPartsPendingItem({
+            partNumber,
+            serialNumber,
+            rawScanText: rawText,
+            scanMethod,
+            sourceCodeType
+          });
+
+          resetPartsScanPair(false);
+          vibrateSuccess();
+          showSuccess('P/N・S/Nを追加しました。');
+          return;
+        }
+
+        vibrateError();
+        showError('P/Nを取得できませんでした。');
+        return;
+      }
+
+      if (state.currentPartsScanMode === 'WAIT_SERIAL_NUMBER') {
+        if (serialNumber) {
+          addPartsPendingItem({
+            partNumber: state.currentPendingPartNumber,
+            serialNumber,
+            rawScanText: rawText,
+            scanMethod,
+            sourceCodeType
+          });
+
+          resetPartsScanPair(false);
+          vibrateSuccess();
+          showSuccess('S/Nを読み取り、登録予定に追加しました。');
+          return;
+        }
+
+        if (partNumber && !serialNumber) {
+          vibrateError();
+          showError('現在はS/N読取待ちです。P/Nを読み直す場合はリセットしてください。');
+          return;
+        }
+
+        vibrateError();
+        showError('S/Nを取得できませんでした。');
+      }
+    }
+
+    function addPartsPendingItem(item) {
+      const partNumber = normalizeDisplayPartNumber(item.partNumber);
+      const serialNumber = normalizeDisplaySerialNumber(item.serialNumber);
+
+      const exists = state.partsInventoryPendingItems.some(row => {
+        return normalizePartsInventoryKey(row.partNumber) === normalizePartsInventoryKey(partNumber) &&
+          normalizePartsInventoryKey(row.serialNumber) === normalizePartsInventoryKey(serialNumber);
+      });
+
+      if (exists) {
+        vibrateError();
+        showError('登録予定一覧に同じP/N・S/Nが既にあります。');
+        return;
+      }
+
+      state.partsInventoryPendingItems.push({
+        tempId: 'TMP-' + Date.now() + '-' + Math.floor(Math.random() * 10000),
+        partNumber,
+        serialNumber,
+        rawScanText: item.rawScanText || '',
+        scanMethod: item.scanMethod || 'AUTO',
+        sourceCodeType: item.sourceCodeType || ''
+      });
+
+      renderPartsPendingItems();
+    }
+
+    function renderPartsPendingItems() {
+      const list = document.getElementById('partsPendingList');
+      const count = document.getElementById('partsPendingCount');
+
+      if (!list || !count) return;
+
+      count.textContent = `（${state.partsInventoryPendingItems.length}件）`;
+      list.innerHTML = '';
+
+      if (state.partsInventoryPendingItems.length === 0) {
+        list.innerHTML = '<div class="parts-pending-card"><div class="list-card-meta">登録予定はありません。</div></div>';
+        return;
+      }
+
+      state.partsInventoryPendingItems.forEach((item, index) => {
+        const card = document.createElement('div');
+        card.className = 'parts-pending-card ready';
+
+        card.innerHTML = `
+          <div class="parts-title">${index + 1}. ${escapeHtml(item.serialNumber || '')}</div>
+
+          <div class="parts-main">
+            <div class="parts-line">
+              <span class="parts-line-label">P/N</span>
+              <span class="parts-line-value">${escapeHtml(item.partNumber || '')}</span>
+            </div>
+
+            <div class="parts-line">
+              <span class="parts-line-label">読取</span>
+              <span class="parts-line-value">${escapeHtml(item.sourceCodeType || item.scanMethod || '')}</span>
+            </div>
+          </div>
+
+          <button class="frat-chip gray" onclick="removePartsPendingItem('${escapeJs(item.tempId)}')">削除</button>
+        `;
+
+        list.appendChild(card);
+      });
+    }
+
+    function removePartsPendingItem(tempId) {
+      state.partsInventoryPendingItems = state.partsInventoryPendingItems.filter(item => {
+        return String(item.tempId) !== String(tempId);
+      });
+
+      renderPartsPendingItems();
+    }
+
+    function clearPartsPendingItems() {
+      const ok = confirm('登録予定をすべて削除しますか？');
+
+      if (!ok) return;
+
+      state.partsInventoryPendingItems = [];
+      renderPartsPendingItems();
+    }
+
+    async function registerPartsInventoryBatch() {
+      const building = document.getElementById('partsRegisterBuilding').value;
+      const locationText = document.getElementById('partsRegisterLocationText').value.trim();
+
+      if (!building) {
+        showError('登録建屋を選択してください。');
+        return;
+      }
+
+      if (state.partsInventoryPendingItems.length === 0) {
+        showError('登録予定がありません。');
+        return;
+      }
+
+      const ok = confirm(
+        state.partsInventoryPendingItems.length +
+        '件を在庫登録します。\n\n実行してよろしいですか？'
+      );
+
+      if (!ok) return;
+
+      try {
+        const result = await apiRequest('registerPartsInventoryBatch', {
+          building,
+          locationText,
+          items: state.partsInventoryPendingItems
+        });
+
+        if (result.duplicateCount > 0 || result.errorCount > 0) {
+          showError(result.message || '一部登録できませんでした。');
+        } else {
+          showSuccess(result.message || '在庫登録しました。');
+        }
+
+        state.partsInventoryPendingItems = [];
+        renderPartsPendingItems();
+
+        await searchPartsInventory();
+
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    function resetPartsScanPair(showMsg = true) {
+      state.currentPartsScanMode = 'WAIT_PART_NUMBER';
+      state.currentPendingPartNumber = '';
+      updatePartsScanModeText();
+
+      if (showMsg) {
+        showInfo('P/N・S/Nペア読取をリセットしました。');
+      }
+    }
+
+    function updatePartsScanModeText() {
+      const mode = document.getElementById('partsScanModeText');
+      const pn = document.getElementById('partsCurrentPnText');
+
+      if (!mode || !pn) return;
+
+      if (state.currentPartsScanMode === 'WAIT_SERIAL_NUMBER') {
+        mode.textContent = 'S/N読取待ち';
+        pn.textContent = '読取済みP/N：' + state.currentPendingPartNumber;
+      } else {
+        mode.textContent = 'P/N読取待ち';
+        pn.textContent = '';
+      }
+    }
+
+    function normalizeDisplayPartNumber(value) {
+      let text = String(value || '').trim().toUpperCase();
+
+      if (!text) return '';
+
+      text = text.replace(/[Ａ-Ｚａ-ｚ０-９]/g, function(s) {
+        return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
+      });
+
+      text = text.replace(/[^A-Z0-9\-]/g, '');
+
+      if (!text.startsWith('P')) {
+        text = 'P' + text;
+      }
+
+      return text;
+    }
+
+    function normalizeDisplaySerialNumber(value) {
+      let text = String(value || '').trim().toUpperCase();
+
+      if (!text) return '';
+
+      text = text.replace(/[Ａ-Ｚａ-ｚ０-９]/g, function(s) {
+        return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
+      });
+
+      text = text.replace(/[^A-Z0-9\-]/g, '');
+
+      if (!text.startsWith('S')) {
+        text = 'S' + text;
+      }
+
+      return text;
+    }
+
+    function normalizePartsInventoryKey(value) {
+      return String(value || '')
+        .trim()
+        .toUpperCase()
+        .replace(/[Ａ-Ｚａ-ｚ０-９]/g, function(s) {
+          return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
+        })
+        .replace(/[^A-Z0-9]/g, '');
+    }
+
+    function vibrateSuccess() {
+      if (navigator.vibrate) {
+        navigator.vibrate(80);
+      }
+    }
+
+    function vibrateError() {
+      if (navigator.vibrate) {
+        navigator.vibrate([80, 60, 80]);
+      }
+    }
+    
     
     function clearKitFilters() {
       document.getElementById('kitFilterMachineType').value = '';
