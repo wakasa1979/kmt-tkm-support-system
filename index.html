@@ -3937,97 +3937,91 @@ function makeJapaneseDateTimeText(year, month, day, hour, minute, second) {
     }
 
     function renderMesaKitExchangeCandidates() {
-      const list = document.getElementById('mesaExchangeList');
-      const count = document.getElementById('mesaExchangeCount');
+  const list = document.getElementById('mesaExchangeList');
+  const count = document.getElementById('mesaExchangeCount');
 
-      count.textContent = `（${state.mesaKitExchangeCandidates.length}件）`;
-      list.innerHTML = '';
+  count.textContent = `（${state.mesaKitExchangeCandidates.length}件）`;
+  list.innerHTML = '';
 
-      renderMesaExchangeBulkBar();
-      if (state.mesaKitExchangeCandidates.length === 0) {
-        list.innerHTML = '<div class="exchange-card"><div class="list-card-meta">MESA KIT交換候補はありません。</div></div>';
-        return;
-      }
+  renderMesaExchangeBulkBar();
 
-      state.mesaKitExchangeCandidates.forEach(item => {
-        const card = document.createElement('div');
-        card.className = getMesaExchangeCardClass(item);
+  if (state.mesaKitExchangeCandidates.length === 0) {
+    list.innerHTML = '<div class="exchange-card"><div class="list-card-meta">MESA KIT交換候補はありません。</div></div>';
+    return;
+  }
 
-        const canSelect = item.matchStatus === '一致' && item.reflectedFlag !== 'TRUE';
-        const checked = state.selectedMesaExchangeCandidateIds.includes(item.candidateId) ? 'checked' : '';
-        const disabledCheck = canSelect ? '' : 'disabled';
+  state.mesaKitExchangeCandidates.forEach(item => {
+    const card = document.createElement('div');
+    card.className = getMesaExchangeCardClass(item);
 
-        
-        card.innerHTML = `
+    const canSelect = item.matchStatus === '一致' && item.reflectedFlag !== 'TRUE';
+    const checked = state.selectedMesaExchangeCandidateIds.includes(item.candidateId) ? 'checked' : '';
+    const disabledCheck = canSelect ? '' : 'disabled';
 
-<div class="frat-select-line">
-            <input
-              type="checkbox"
-              class="frat-select-check"
-              ${checked}
-              ${disabledCheck}
-              onchange="toggleMesaExchangeSelection('${escapeJs(item.candidateId)}', this.checked)"
-            >
-            <div class="exchange-title" style="margin-bottom:0;">
-              ${escapeHtml(item.equipmentCh || '装置Ch未判定')}
-            </div>
-        
-        
-          <div class="exchange-title">
-            ${escapeHtml(item.equipmentCh || '装置Ch未判定')}
-          </div>
+    card.innerHTML = `
+      <div class="frat-select-line">
+        <input
+          type="checkbox"
+          class="frat-select-check"
+          ${checked}
+          ${disabledCheck}
+          onchange="toggleMesaExchangeSelection('${escapeJs(item.candidateId)}', this.checked)"
+        >
+        <div class="exchange-title" style="margin-bottom:0;">
+          ${escapeHtml(item.equipmentCh || '装置Ch未判定')}
+        </div>
+      </div>
 
-          <div class="kit-main">
-            <div class="kit-line">
-              <span class="kit-line-label">対象日</span>
-              <span class="kit-line-value">${escapeHtml(item.sourceDateText || '')}</span>
-            </div>
+      <div class="kit-main">
+        <div class="kit-line">
+          <span class="kit-line-label">対象日</span>
+          <span class="kit-line-value">${escapeHtml(item.sourceDateText || '')}</span>
+        </div>
 
-            <div class="kit-line">
-              <span class="kit-line-label">外したKIT</span>
-              <span class="kit-line-value">${escapeHtml(item.removedSerial || '')}</span>
-            </div>
+        <div class="kit-line">
+          <span class="kit-line-label">外したKIT</span>
+          <span class="kit-line-value">${escapeHtml(item.removedSerial || '')}</span>
+        </div>
 
-            <div class="kit-line">
-              <span class="kit-line-label">現在取付中</span>
-              <span class="kit-line-value">${escapeHtml(item.currentKitSerial || '')}</span>
-            </div>
+        <div class="kit-line">
+          <span class="kit-line-label">現在取付中</span>
+          <span class="kit-line-value">${escapeHtml(item.currentKitSerial || '')}</span>
+        </div>
 
-            <div class="kit-line">
-              <span class="kit-line-label">取り付けKIT</span>
-              <span class="kit-line-value">${escapeHtml(item.installedSerial || '')}</span>
-            </div>
+        <div class="kit-line">
+          <span class="kit-line-label">取り付けKIT</span>
+          <span class="kit-line-value">${escapeHtml(item.installedSerial || '')}</span>
+        </div>
 
-            <div class="kit-line">
-              <span class="kit-line-label">P/N</span>
-              <span class="kit-line-value">${escapeHtml(item.partNumber || '')}</span>
-            </div>
+        <div class="kit-line">
+          <span class="kit-line-label">P/N</span>
+          <span class="kit-line-value">${escapeHtml(item.partNumber || '')}</span>
+        </div>
 
-            <div class="kit-line">
-              <span class="kit-line-label">メンテ種別</span>
-              <span class="kit-line-value">${escapeHtml(makeMaintenanceTypeText(item))}</span>
-            </div>
-          </div>
+        <div class="kit-line">
+          <span class="kit-line-label">メンテ種別</span>
+          <span class="kit-line-value">${escapeHtml(makeMaintenanceTypeText(item))}</span>
+        </div>
+      </div>
 
-          <div class="badge-row">
-            ${mesaExchangeStatusBadge(item.matchStatus)}
-            ${item.reflectedFlag === 'TRUE' ? badge('反映済み', 'gray') : badge('未反映', 'orange')}
-            ${item.installedKitExists === 'TRUE' ? badge('取付KIT登録あり', 'green') : badge('取付KIT自動作成予定', 'purple')}
-          </div>
+      <div class="badge-row">
+        ${mesaExchangeStatusBadge(item.matchStatus)}
+        ${item.reflectedFlag === 'TRUE' ? badge('反映済み', 'gray') : badge('未反映', 'orange')}
+        ${item.installedKitExists === 'TRUE' ? badge('取付KIT登録あり', 'green') : badge('取付KIT自動作成予定', 'purple')}
+      </div>
 
-          <div class="exchange-message">
-            ${escapeHtml(item.message || '')}
-          </div>
+      <div class="exchange-message">
+        ${escapeHtml(item.message || '')}
+      </div>
 
-          <div class="exchange-actions">
-            ${renderMesaExchangeActionButton(item)}
-          </div>
-        `;
+      <div class="exchange-actions">
+        ${renderMesaExchangeActionButton(item)}
+      </div>
+    `;
 
-        list.appendChild(card);
-      });
-    }
-
+    list.appendChild(card);
+  });
+}
     function getMesaExchangeCardClass(item) {
       const classes = ['exchange-card'];
 
