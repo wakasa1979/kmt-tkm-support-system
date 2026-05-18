@@ -2045,7 +2045,7 @@
       kitEvents: [],
 
       mesaKitExchangeCandidates: [],
-selectedMesaExchangeCandidateIds: []
+　　　　selectedMesaExchangeCandidateIds: []
     };
 
     window.addEventListener('load', async () => {
@@ -4236,6 +4236,104 @@ state.selectedMesaExchangeCandidateIds = state.selectedMesaExchangeCandidateIds.
     renderMesaKitExchangeCandidates();
 
     showSuccess(result.message || 'KIT現在地へ反映しました。');
+
+  } catch (error) {
+    showError(error.message);
+  }
+}
+
+    function toggleMesaExchangeSelection(candidateId, checked) {
+  if (checked) {
+    if (!state.selectedMesaExchangeCandidateIds.includes(candidateId)) {
+      state.selectedMesaExchangeCandidateIds.push(candidateId);
+    }
+  } else {
+    state.selectedMesaExchangeCandidateIds = state.selectedMesaExchangeCandidateIds.filter(id => {
+      return String(id) !== String(candidateId);
+    });
+  }
+
+  renderMesaExchangeBulkBar();
+}
+
+
+function renderMesaExchangeBulkBar() {
+  const bar = document.getElementById('mesaExchangeBulkBar');
+  const count = document.getElementById('mesaExchangeSelectedCount');
+
+  if (!bar || !count) {
+    return;
+  }
+
+  count.textContent = String(state.selectedMesaExchangeCandidateIds.length);
+
+  if (state.selectedMesaExchangeCandidateIds.length > 0) {
+    bar.classList.add('show');
+  } else {
+    bar.classList.remove('show');
+  }
+}
+
+
+function clearMesaExchangeSelection() {
+  state.selectedMesaExchangeCandidateIds = [];
+  renderMesaKitExchangeCandidates();
+}
+
+
+function updateMesaExchangeCandidateLocally(updatedCandidate) {
+  if (!updatedCandidate || !updatedCandidate.candidateId) {
+    return;
+  }
+
+  const index = state.mesaKitExchangeCandidates.findIndex(item => {
+    return String(item.candidateId) === String(updatedCandidate.candidateId);
+  });
+
+  if (index !== -1) {
+    state.mesaKitExchangeCandidates[index] = updatedCandidate;
+  }
+}
+
+
+async function bulkReflectMesaKitExchangeCandidates() {
+  if (state.selectedMesaExchangeCandidateIds.length === 0) {
+    showError('一括反映する候補を選択してください。');
+    return;
+  }
+
+  const ok = confirm(
+    '選択中の' +
+    state.selectedMesaExchangeCandidateIds.length +
+    '件をKIT現在地へ反映します。\n\n実行してよろしいですか？'
+  );
+
+  if (!ok) {
+    return;
+  }
+
+  try {
+    const result = await apiRequest('reflectMesaKitExchangeCandidatesBulk', {
+      candidateIds: state.selectedMesaExchangeCandidateIds
+    });
+
+    const results = result.results || [];
+
+    results.forEach(item => {
+      if (item.data && item.data.candidate) {
+        updateMesaExchangeCandidateLocally(item.data.candidate);
+      }
+    });
+
+    state.selectedMesaExchangeCandidateIds = [];
+
+    renderMesaKitExchangeCandidates();
+
+    if (result.errorCount && result.errorCount > 0) {
+      showError(result.message || '一部の候補で反映に失敗しました。');
+    } else {
+      showSuccess(result.message || '選択分をKIT現在地へ反映しました。');
+    }
 
   } catch (error) {
     showError(error.message);
