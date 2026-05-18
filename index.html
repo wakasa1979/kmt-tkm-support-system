@@ -1761,8 +1761,22 @@
         <button class="btn secondary" onclick="clearMesaKitExchangeFilters()">条件クリア</button>
       </div>
 
-      <div class="card">
+            <div class="card">
         <h2 class="card-title">照合結果 <span id="mesaExchangeCount"></span></h2>
+
+        <div id="mesaExchangeBulkBar" class="frat-bulk-bar">
+          <div class="frat-bulk-row">
+            <div class="frat-bulk-text">
+              選択中：<span id="mesaExchangeSelectedCount">0</span>件
+            </div>
+
+            <div class="frat-actions">
+              <button class="frat-chip primary" onclick="bulkReflectMesaKitExchangeCandidates()">選択分をKIT現在地へ反映</button>
+              <button class="frat-chip gray" onclick="clearMesaExchangeSelection()">選択解除</button>
+            </div>
+          </div>
+        </div>
+
         <div id="mesaExchangeList" class="list"></div>
       </div>
     </section>
@@ -2030,7 +2044,8 @@
       currentKit: null,
       kitEvents: [],
 
-      mesaKitExchangeCandidates: []
+      mesaKitExchangeCandidates: [],
+selectedMesaExchangeCandidateIds: []
     };
 
     window.addEventListener('load', async () => {
@@ -3928,6 +3943,7 @@ function makeJapaneseDateTimeText(year, month, day, hour, minute, second) {
       count.textContent = `（${state.mesaKitExchangeCandidates.length}件）`;
       list.innerHTML = '';
 
+      renderMesaExchangeBulkBar();
       if (state.mesaKitExchangeCandidates.length === 0) {
         list.innerHTML = '<div class="exchange-card"><div class="list-card-meta">MESA KIT交換候補はありません。</div></div>';
         return;
@@ -3937,7 +3953,26 @@ function makeJapaneseDateTimeText(year, month, day, hour, minute, second) {
         const card = document.createElement('div');
         card.className = getMesaExchangeCardClass(item);
 
+        const canSelect = item.matchStatus === '一致' && item.reflectedFlag !== 'TRUE';
+        const checked = state.selectedMesaExchangeCandidateIds.includes(item.candidateId) ? 'checked' : '';
+        const disabledCheck = canSelect ? '' : 'disabled';
+
+        
         card.innerHTML = `
+
+<div class="frat-select-line">
+            <input
+              type="checkbox"
+              class="frat-select-check"
+              ${checked}
+              ${disabledCheck}
+              onchange="toggleMesaExchangeSelection('${escapeJs(item.candidateId)}', this.checked)"
+            >
+            <div class="exchange-title" style="margin-bottom:0;">
+              ${escapeHtml(item.equipmentCh || '装置Ch未判定')}
+            </div>
+        
+        
           <div class="exchange-title">
             ${escapeHtml(item.equipmentCh || '装置Ch未判定')}
           </div>
@@ -4048,6 +4083,91 @@ function makeJapaneseDateTimeText(year, month, day, hour, minute, second) {
   if (item.matchStatus === '一致') {
     return `<button class="frat-chip primary" onclick="reflectMesaKitExchangeCandidate('${escapeJs(item.candidateId)}')">KIT現在地へ反映</button>`;
   }
+function toggleMesaExchangeSelection(candidateId, checked) {
+  if (checked) {
+    if (!state.selectedMesaExchangeCandidateIds.includes(candidateId)) {
+      state.selectedMesaExchangeCandidateIds.push(candidateId);
+    }
+  } else {
+    state.selectedMesaExchangeCandidateIds = state.selectedMesaExchangeCandidateIds.filter(id => id !== candidateId);
+  }
+
+  renderMesaExchangeBulkBar();
+}
+
+function renderMesaExchangeBulkBar() {
+  const bar = document.getElementById('mesaExchangeBulkBar');
+  const count = document.getElementById('mesaExchangeSelectedCount');
+
+  if (!bar || !count) return;
+
+  count.textContent = String(state.selectedMesaExchangeCandidateIds.length);
+
+  if (state.selectedMesaExchangeCandidateIds.length > 0) {
+    bar.classList.add('show');
+  } else {
+    bar.classList.remove('show');
+  }
+}
+
+function clearMesaExchangeSelection() {
+  state.selectedMesaExchangeCandidateIds = [];
+  renderMesaKitExchangeCandidates();
+}
+
+function updateMesaExchangeCandidateLocally(updatedCandidate) {
+  if (!updatedCandidate || !updatedCandidate.candidateId) return;
+
+  const index = state.mesaKitExchangeCandidates.findIndex(item => {
+    return String(item.candidateId) === String(updatedCandidate.candidateId);
+  });
+
+  if (index !== -1) {
+    state.mesaKitExchangeCandidates[index] = updatedCandidate;
+  }
+}
+
+async function bulkReflectMesaKitExchangeCandidates() {
+  if (state.selectedMesaExchangeCandidateIds.length === 0) {
+    showError('一括反映する候補を選択してください。');
+    return;
+  }
+
+  const ok = confirm(
+    '選択中の' +
+    state.selectedMesaExchangeCandidateIds.length +
+    '件をKIT現在地へ反映します。\n\n実行してよろしいですか？'
+  );
+
+  if (!ok) return;
+
+  try {
+    const result = await apiRequest('reflectMesaKitExchangeCandidatesBulk', {
+      candidateIds: state.selectedMesaExchangeCandidateIds
+    });
+
+    const results = result.results || [];
+
+    results.forEach(item => {
+      if (item.data && item.data.candidate) {
+        updateMesaExchangeCandidateLocally(item.data.candidate);
+      }
+    });
+
+    state.selectedMesaExchangeCandidateIds = [];
+
+    renderMesaKitExchangeCandidates();
+
+    if (result.errorCount && result.errorCount > 0) {
+      showError(result.message || '一部の候補で反映に失敗しました。');
+    } else {
+      showSuccess(result.message || '選択分をKIT現在地へ反映しました。');
+    }
+
+  } catch (error) {
+    showError(error.message);
+  }
+}      
 
   return '<button class="frat-chip disabled" disabled>要確認</button>';
 }
@@ -4108,6 +4228,11 @@ async function reflectMesaKitExchangeCandidate(candidateId) {
       }
     }
 
+state.selectedMesaExchangeCandidateIds = state.selectedMesaExchangeCandidateIds.filter(id => {
+  return String(id) !== String(candidateId);
+});
+
+    
     renderMesaKitExchangeCandidates();
 
     showSuccess(result.message || 'KIT現在地へ反映しました。');
