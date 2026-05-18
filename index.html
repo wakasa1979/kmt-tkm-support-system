@@ -429,6 +429,57 @@
       width: 100%;
     }
 
+
+        .exchange-card {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fff;
+      padding: 14px;
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+    }
+
+    .exchange-card.match {
+      border-color: #86efac;
+      background: #f0fdf4;
+    }
+
+    .exchange-card.warning {
+      border-color: #fcd34d;
+      background: #fffbeb;
+    }
+
+    .exchange-card.error {
+      border-color: #fecaca;
+      background: #fff7f7;
+    }
+
+    .exchange-card.reflected {
+      background: #f3f4f6;
+      border-color: #d1d5db;
+      opacity: 0.88;
+    }
+
+    .exchange-title {
+      font-size: 16px;
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+
+    .exchange-message {
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1.5;
+      margin-top: 10px;
+      color: #374151;
+    }
+
+    .exchange-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
     .maintenance-title,
     .frat-title,
     .kit-title {
@@ -1207,11 +1258,11 @@
     </section>
 
     <section id="pageSearch" class="page">
-      <div class="top-actions">
+            <div class="top-actions">
         <button class="btn small secondary" onclick="showPage('pageHome')">← ホーム</button>
-        <button class="btn small blue" onclick="openCreateForm()">＋ 新規登録</button>
+        <button class="btn small blue" onclick="loadKitList()">更新</button>
+        <button class="btn small success" onclick="openMesaKitExchangePage()">MESA交換照合</button>
       </div>
-
       <div class="card">
         <h2 class="card-title">仮置き場検索</h2>
 
@@ -1650,6 +1701,75 @@
       </div>
     </section>
 
+    <section id="pageMesaKitExchange" class="page">
+      <div class="top-actions">
+        <button class="btn small secondary" onclick="showPage('pageKit')">← KIT現在地へ</button>
+        <button class="btn small blue" onclick="loadMesaKitExchangeCandidates()">一覧更新</button>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">MESA KIT交換照合</h2>
+
+        <p class="list-card-meta">
+          FRAT/Blackoutメールから取り込まれたMESA対象を、現在のKIT取付情報と照合します。<br>
+          この画面ではまだKIT現在地には反映しません。まずは一致・不一致の確認用です。
+        </p>
+
+        <div class="filter-grid">
+          <div>
+            <label class="label" for="mesaExchangeDateFrom">対象日 開始</label>
+            <input id="mesaExchangeDateFrom" class="input" type="date" />
+          </div>
+
+          <div>
+            <label class="label" for="mesaExchangeDateTo">対象日 終了</label>
+            <input id="mesaExchangeDateTo" class="input" type="date" />
+          </div>
+
+          <div>
+            <label class="label" for="mesaExchangeMatchStatus">照合状態</label>
+            <select id="mesaExchangeMatchStatus" class="select">
+              <option value="">すべて</option>
+              <option value="一致">一致</option>
+              <option value="不一致">不一致</option>
+              <option value="現在KITなし">現在KITなし</option>
+              <option value="取り付けKITなし">取り付けKITなし</option>
+              <option value="取り付けKITが別装置に取付中">取り付けKITが別装置に取付中</option>
+              <option value="重複あり">重複あり</option>
+              <option value="既に反映済み">既に反映済み</option>
+              <option value="対象外">対象外</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="label" for="mesaExchangeReflectedFlag">反映状態</label>
+            <select id="mesaExchangeReflectedFlag" class="select">
+              <option value="">すべて</option>
+              <option value="false">未反映</option>
+              <option value="true">反映済み</option>
+            </select>
+          </div>
+
+          <div class="full">
+            <label class="label" for="mesaExchangeKeyword">キーワード</label>
+            <input id="mesaExchangeKeyword" class="input" type="text" placeholder="装置ID-Ch / KIT No. / P/N など" />
+          </div>
+        </div>
+
+        <button class="btn success" onclick="createMesaKitExchangeCandidates()">交換候補を作成・更新</button>
+        <button class="btn blue" onclick="loadMesaKitExchangeCandidates()">検索</button>
+        <button class="btn secondary" onclick="clearMesaKitExchangeFilters()">条件クリア</button>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">照合結果 <span id="mesaExchangeCount"></span></h2>
+        <div id="mesaExchangeList" class="list"></div>
+      </div>
+    </section>
+
+
+
+    
     <section id="pageKitDetail" class="page">
       <div class="top-actions">
         <button class="btn small secondary" onclick="showPage('pageKit')">← KIT一覧へ</button>
@@ -1906,9 +2026,11 @@
 
       
 
-      kitList: [],
+            kitList: [],
       currentKit: null,
-      kitEvents: []
+      kitEvents: [],
+
+      mesaKitExchangeCandidates: []
     };
 
     window.addEventListener('load', async () => {
@@ -3723,6 +3845,211 @@ function makeJapaneseDateTimeText(year, month, day, hour, minute, second) {
       if (state.kitList.length === 0) {
         await loadKitList();
       }
+    }
+
+        async function openMesaKitExchangePage() {
+      showPage('pageMesaKitExchange');
+
+      if (state.mesaKitExchangeCandidates.length === 0) {
+        await loadMesaKitExchangeCandidates();
+      }
+    }
+
+    function getMesaKitExchangeFilters() {
+      return {
+        sourceDateFrom: document.getElementById('mesaExchangeDateFrom').value,
+        sourceDateTo: document.getElementById('mesaExchangeDateTo').value,
+        matchStatus: document.getElementById('mesaExchangeMatchStatus').value,
+        reflectedFlag: document.getElementById('mesaExchangeReflectedFlag').value,
+        keyword: document.getElementById('mesaExchangeKeyword').value.trim()
+      };
+    }
+
+    async function createMesaKitExchangeCandidates() {
+      try {
+        const filters = getMesaKitExchangeFilters();
+
+        if (filters.sourceDateFrom && filters.sourceDateTo && filters.sourceDateFrom > filters.sourceDateTo) {
+          showError('終了日は開始日以降にしてください。');
+          return;
+        }
+
+        const result = await apiRequest('createMesaKitExchangeCandidates', {
+          filters: {
+            sourceDateFrom: filters.sourceDateFrom,
+            sourceDateTo: filters.sourceDateTo,
+            onlyUnshipped: true
+          }
+        });
+
+        showSuccess(result.message || 'MESA KIT交換候補を作成しました。');
+
+        await loadMesaKitExchangeCandidates();
+
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    async function loadMesaKitExchangeCandidates() {
+      try {
+        const filters = getMesaKitExchangeFilters();
+
+        if (filters.sourceDateFrom && filters.sourceDateTo && filters.sourceDateFrom > filters.sourceDateTo) {
+          showError('終了日は開始日以降にしてください。');
+          return;
+        }
+
+        const result = await apiRequest('getMesaKitExchangeCandidates', { filters });
+
+        state.mesaKitExchangeCandidates = result.data || [];
+
+        renderMesaKitExchangeCandidates();
+
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    function clearMesaKitExchangeFilters() {
+      document.getElementById('mesaExchangeDateFrom').value = '';
+      document.getElementById('mesaExchangeDateTo').value = '';
+      document.getElementById('mesaExchangeMatchStatus').value = '';
+      document.getElementById('mesaExchangeReflectedFlag').value = '';
+      document.getElementById('mesaExchangeKeyword').value = '';
+
+      loadMesaKitExchangeCandidates();
+    }
+
+    function renderMesaKitExchangeCandidates() {
+      const list = document.getElementById('mesaExchangeList');
+      const count = document.getElementById('mesaExchangeCount');
+
+      count.textContent = `（${state.mesaKitExchangeCandidates.length}件）`;
+      list.innerHTML = '';
+
+      if (state.mesaKitExchangeCandidates.length === 0) {
+        list.innerHTML = '<div class="exchange-card"><div class="list-card-meta">MESA KIT交換候補はありません。</div></div>';
+        return;
+      }
+
+      state.mesaKitExchangeCandidates.forEach(item => {
+        const card = document.createElement('div');
+        card.className = getMesaExchangeCardClass(item);
+
+        card.innerHTML = `
+          <div class="exchange-title">
+            ${escapeHtml(item.equipmentCh || '装置Ch未判定')}
+          </div>
+
+          <div class="kit-main">
+            <div class="kit-line">
+              <span class="kit-line-label">対象日</span>
+              <span class="kit-line-value">${escapeHtml(item.sourceDateText || '')}</span>
+            </div>
+
+            <div class="kit-line">
+              <span class="kit-line-label">外したKIT</span>
+              <span class="kit-line-value">${escapeHtml(item.removedSerial || '')}</span>
+            </div>
+
+            <div class="kit-line">
+              <span class="kit-line-label">現在取付中</span>
+              <span class="kit-line-value">${escapeHtml(item.currentKitSerial || '')}</span>
+            </div>
+
+            <div class="kit-line">
+              <span class="kit-line-label">取り付けKIT</span>
+              <span class="kit-line-value">${escapeHtml(item.installedSerial || '')}</span>
+            </div>
+
+            <div class="kit-line">
+              <span class="kit-line-label">P/N</span>
+              <span class="kit-line-value">${escapeHtml(item.partNumber || '')}</span>
+            </div>
+
+            <div class="kit-line">
+              <span class="kit-line-label">メンテ種別</span>
+              <span class="kit-line-value">${escapeHtml(makeMaintenanceTypeText(item))}</span>
+            </div>
+          </div>
+
+          <div class="badge-row">
+            ${mesaExchangeStatusBadge(item.matchStatus)}
+            ${item.reflectedFlag === 'TRUE' ? badge('反映済み', 'gray') : badge('未反映', 'orange')}
+            ${item.installedKitExists === 'TRUE' ? badge('取付KIT登録あり', 'green') : badge('取付KIT自動作成予定', 'purple')}
+          </div>
+
+          <div class="exchange-message">
+            ${escapeHtml(item.message || '')}
+          </div>
+
+          <div class="exchange-actions">
+            ${renderMesaExchangeActionButton(item)}
+          </div>
+        `;
+
+        list.appendChild(card);
+      });
+    }
+
+    function getMesaExchangeCardClass(item) {
+      const classes = ['exchange-card'];
+
+      if (item.reflectedFlag === 'TRUE') {
+        classes.push('reflected');
+      } else if (item.matchStatus === '一致') {
+        classes.push('match');
+      } else if (item.matchStatus === '不一致' || item.matchStatus === '重複あり' || item.matchStatus === '取り付けKITが別装置に取付中') {
+        classes.push('error');
+      } else {
+        classes.push('warning');
+      }
+
+      return classes.join(' ');
+    }
+
+    function mesaExchangeStatusBadge(status) {
+      if (status === '一致') {
+        return badge('一致', 'green');
+      }
+
+      if (status === '既に反映済み') {
+        return badge('既に反映済み', 'gray');
+      }
+
+      if (status === '不一致' || status === '重複あり' || status === '取り付けKITが別装置に取付中') {
+        return badge(status || 'エラー', 'red');
+      }
+
+      if (status === '現在KITなし' || status === '取り付けKITなし' || status === '対象外') {
+        return badge(status || '要確認', 'orange');
+      }
+
+      return badge(status || '未判定', 'gray');
+    }
+
+    function makeMaintenanceTypeText(item) {
+      const type = item.maintenanceType || '';
+      const label = item.maintenanceTypeLabel || '';
+
+      if (type && label) {
+        return `${type} / ${label}`;
+      }
+
+      return type || label || '';
+    }
+
+    function renderMesaExchangeActionButton(item) {
+      if (item.reflectedFlag === 'TRUE') {
+        return '<button class="frat-chip disabled" disabled>反映済み</button>';
+      }
+
+      if (item.matchStatus === '一致') {
+        return '<button class="frat-chip primary" onclick="showInfo(\'次のStepでKIT現在地への反映処理を追加します。今回は照合確認までです。\')">反映可能</button>';
+      }
+
+      return '<button class="frat-chip disabled" disabled>要確認</button>';
     }
 
     function getKitFilters() {
