@@ -4041,16 +4041,16 @@ function makeJapaneseDateTimeText(year, month, day, hour, minute, second) {
     }
 
     function renderMesaExchangeActionButton(item) {
-      if (item.reflectedFlag === 'TRUE') {
-        return '<button class="frat-chip disabled" disabled>反映済み</button>';
-      }
+  if (item.reflectedFlag === 'TRUE' || item.matchStatus === '既に反映済み') {
+    return '<button class="frat-chip disabled" disabled>反映済み</button>';
+  }
 
-      if (item.matchStatus === '一致') {
-        return '<button class="frat-chip primary" onclick="showInfo(\'次のStepでKIT現在地への反映処理を追加します。今回は照合確認までです。\')">反映可能</button>';
-      }
+  if (item.matchStatus === '一致') {
+    return `<button class="frat-chip primary" onclick="reflectMesaKitExchangeCandidate('${escapeJs(item.candidateId)}')">KIT現在地へ反映</button>`;
+  }
 
-      return '<button class="frat-chip disabled" disabled>要確認</button>';
-    }
+  return '<button class="frat-chip disabled" disabled>要確認</button>';
+}
 
     function getKitFilters() {
       return {
@@ -4065,6 +4065,59 @@ function makeJapaneseDateTimeText(year, month, day, hour, minute, second) {
       };
     }
 
+async function reflectMesaKitExchangeCandidate(candidateId) {
+  if (!candidateId) {
+    showError('candidateId が取得できません。');
+    return;
+  }
+
+  const target = state.mesaKitExchangeCandidates.find(item => {
+    return String(item.candidateId) === String(candidateId);
+  });
+
+  const equipmentCh = target ? target.equipmentCh : '';
+  const removedSerial = target ? target.removedSerial : '';
+  const installedSerial = target ? target.installedSerial : '';
+
+  const ok = confirm(
+    'このMESA KIT交換をKIT現在地へ反映します。\n\n' +
+    '装置Ch：' + (equipmentCh || '-') + '\n' +
+    '外したKIT：' + (removedSerial || '-') + '\n' +
+    '取り付けKIT：' + (installedSerial || '-') + '\n\n' +
+    '実行してよろしいですか？'
+  );
+
+  if (!ok) return;
+
+  try {
+    const result = await apiRequest('reflectMesaKitExchangeCandidate', {
+      candidateId: candidateId
+    });
+
+    const updatedCandidate = result.data && result.data.candidate
+      ? result.data.candidate
+      : null;
+
+    if (updatedCandidate) {
+      const index = state.mesaKitExchangeCandidates.findIndex(item => {
+        return String(item.candidateId) === String(candidateId);
+      });
+
+      if (index !== -1) {
+        state.mesaKitExchangeCandidates[index] = updatedCandidate;
+      }
+    }
+
+    renderMesaKitExchangeCandidates();
+
+    showSuccess(result.message || 'KIT現在地へ反映しました。');
+
+  } catch (error) {
+    showError(error.message);
+  }
+}
+
+    
     async function loadKitList() {
       try {
         const filters = getKitFilters();
