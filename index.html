@@ -1782,7 +1782,7 @@
       </div>
 
       <div class="card">
-        <h2 class="card-title">KIT履歴</h2>
+        <h2 class="card-title">交換履歴</h2>
         <div id="kitEventList" class="list"></div>
       </div>
     </section>
@@ -4249,8 +4249,10 @@ async function reflectMesaKitExchangeCandidate(candidateId) {
 
       area.innerHTML = `
         ${detailRow('KIT No.', item.kitSerial)}
+        ${detailRow('PartsNo', item.partNumber)}
         ${detailRow('機種', item.machineType)}
         ${detailRow('キット種別', item.kitType)}
+        ${detailRow('現在取り付け装置', item.currentEquipmentCh)}
         ${detailRow('現在状態', item.currentStatus)}
         ${detailRow('現在建屋', item.currentBuilding)}
         ${detailRow('現在仮置きID', item.currentKariokiId)}
@@ -4299,33 +4301,107 @@ async function reflectMesaKitExchangeCandidate(candidateId) {
     }
 
     function renderKitEventLog() {
-      const list = document.getElementById('kitEventList');
+  const list = document.getElementById('kitEventList');
 
-      list.innerHTML = '';
+  list.innerHTML = '';
 
-      if (!state.kitEvents || state.kitEvents.length === 0) {
-        list.innerHTML = '<div class="kit-card"><div class="list-card-meta">履歴はありません。</div></div>';
-        return;
-      }
+  const traceEvents = (state.kitEvents || []).filter(event => {
+    return event.eventType === 'INSTALLED' || event.eventType === 'REMOVED';
+  });
 
-      state.kitEvents.forEach(event => {
-        const card = document.createElement('div');
-        card.className = 'log-card';
+  if (traceEvents.length === 0) {
+    list.innerHTML = '<div class="kit-card"><div class="list-card-meta">交換履歴はありません。</div></div>';
+    return;
+  }
 
-        card.innerHTML = `
-          <strong>${escapeHtml(event.eventType || '')}</strong>
-          <div>${escapeHtml(event.eventAt || '')}</div>
-          <div>操作者：${escapeHtml(event.actorUserName || '')}</div>
-          <div>KIT：${escapeHtml(event.kitSerial || '')}</div>
-          <div>状態：${escapeHtml(event.beforeStatus || '')} → ${escapeHtml(event.afterStatus || '')}</div>
-          <div>${escapeHtml(event.message || '')}</div>
-          ${event.note ? `<div>備考：${escapeHtml(event.note || '')}</div>` : ''}
-        `;
+  traceEvents.sort((a, b) => {
+    const ad = String(a.eventDate || a.eventAt || '');
+    const bd = String(b.eventDate || b.eventAt || '');
+    return bd.localeCompare(ad);
+  });
 
-        list.appendChild(card);
+  traceEvents.forEach(event => {
+    const card = document.createElement('div');
+    card.className = 'log-card';
+
+    const eventText = makeKitTraceabilityText(event);
+
+    card.innerHTML = `
+      <strong>${escapeHtml(eventText)}</strong>
+      ${event.partNumber ? `<div>PartsNo：${escapeHtml(event.partNumber || '')}</div>` : ''}
+      ${event.actorUserName ? `<div>記録者：${escapeHtml(event.actorUserName || '')}</div>` : ''}
+      ${event.sourceFratTargetId ? `<div>FRAT ID：${escapeHtml(event.sourceFratTargetId || '')}</div>` : ''}
+    `;
+
+    list.appendChild(card);
+  });
+}
+
+    function makeKitTraceabilityText(event) {
+  const dateText = formatTraceabilityDate(event.eventDate || event.eventAt || '');
+  const equipmentCh = event.equipmentCh || event.equipmentId || '装置不明';
+  const maintenanceLabel = event.maintenanceTypeLabel || '';
+
+  let actionText = '';
+
+  if (event.eventType === 'INSTALLED') {
+    actionText = `${equipmentCh}に取り付け`;
+  } else if (event.eventType === 'REMOVED') {
+    actionText = `${equipmentCh}から取り外し`;
+  } else {
+    actionText = event.eventLabel || event.eventType || '';
+  }
+
+  const suffix = maintenanceLabel ? `（${maintenanceLabel}）` : '';
+
+  return `${dateText}　${actionText}${suffix}`;
+}
+
+function formatTraceabilityDate(value) {
+  if (!value) return '';
+
+  const text = String(value).trim();
+
+  if (!text) return '';
+
+  if (/^\d{4}年\d{1,2}月\d{1,2}日/.test(text)) {
+    return text.replace(/\s+\d{1,2}時.*$/, '');
+  }
+
+  if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(text)) {
+    const parts = text.split('-');
+
+    return `${parts[0]}年${String(parts[1]).padStart(2, '0')}月${String(parts[2]).padStart(2, '0')}日`;
+  }
+
+  if (/^\d{4}\/\d{1,2}\/\d{1,2}$/.test(text)) {
+    const parts = text.split('/');
+
+    return `${parts[0]}年${String(parts[1]).padStart(2, '0')}月${String(parts[2]).padStart(2, '0')}日`;
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}T/.test(text)) {
+    const date = new Date(text);
+
+    if (!isNaN(date.getTime())) {
+      const formatter = new Intl.DateTimeFormat('ja-JP', {
+        timeZone: 'Asia/Tokyo',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
       });
-    }
 
+      const formatted = formatter.format(date);
+      const parts = formatted.split('/');
+
+      return `${parts[0]}年${parts[1]}月${parts[2]}日`;
+    }
+  }
+
+  return text;
+}
+
+    
     function clearKitFilters() {
       document.getElementById('kitFilterMachineType').value = '';
       document.getElementById('kitFilterStatus').value = '';
